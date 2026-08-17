@@ -1,16 +1,17 @@
-const CACHE_NAME = 'tomo-shell-v1.0.1-auth1';
+const CACHE_NAME = 'tomo-shell-v1.0.2-iconfix1';
 const SHELL = [
   './',
   './index.html',
-  './styles.css?v=1.0.1',
-  './app.js?v=1.0.1',
-  './auth/anilist-config.js?v=1.0.1',
-  './auth/anilist-auth.js?v=1.0.1',
-  './auth/anilist-auth.css?v=1.0.1',
-  './manifest.json?v=1.0.1',
-  './icons/icon-192.png?v=1.0.1',
-  './icons/icon.svg?v=1.0.1',
-  './icons/icon-maskable.svg?v=1.0.1'
+  './styles.css?v=1.0.2',
+  './icons/header-icon.css?v=1.0.2',
+  './app.js?v=1.0.2',
+  './auth/anilist-config.js?v=1.0.2',
+  './auth/anilist-auth.js?v=1.0.2',
+  './auth/anilist-auth.css?v=1.0.2',
+  './manifest.json?v=1.0.2',
+  './icons/icon-192.png?v=1.0.2',
+  './icons/icon.svg?v=1.0.2',
+  './icons/icon-maskable.svg?v=1.0.2'
 ];
 
 self.addEventListener('install', event => {
