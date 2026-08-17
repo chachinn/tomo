@@ -2,38 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#ff8fbd" />
-  <meta name="description" content="Tomo — your anime discovery companion. Discover, randomize, and soon connect your AniList account." />
+  <meta name="description" content="Tomo is your anime discovery companion for AniList-powered discovery, personal list sync, random picks, and watch planning." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Tomo" />
-  <link rel="manifest" href="manifest.json?v=3" />
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/tomo-icon-v3.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/tomo-icon-v3.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Tomo" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="manifest.json?v=1.0.1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png?v=1.0.1" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=1.0.1" />
+  <link rel="stylesheet" href="styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="auth/anilist-auth.css?v=1.0.1" />
   <title>Tomo — Anime Discovery Companion</title>
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-lockup">
-        <img class="brand-icon" src="icons/tomo-icon-v3.png" alt="Tomo" width="52" height="52" />
+        <div class="brand-icon" role="img" aria-label="Tomo app icon"></div>
         <div>
           <div class="brand">tomo</div>
           <div class="brand-jp">とも · your anime companion</div>
         </div>
       </div>
-      <button id="installBtn" class="ghost-btn" hidden>Install</button>
+      <div class="topbar-actions">
+        <button id="accountJumpBtn" class="ghost-btn" type="button">AniList</button>
+        <button id="installBtn" class="ghost-btn" type="button" hidden>Install</button>
+      </div>
     </header>
 
     <section class="hero-card">
       <span class="eyebrow">WHAT ARE WE WATCHING?</span>
       <h1>Let Tomo pick your next anime ✨</h1>
-      <p>Use AniList-powered discovery now. Your personal AniList login and backlog roulette are the next milestone.</p>
+      <p>Discover with AniList, then connect your account so Tomo can understand your real anime library and make your future picks personal.</p>
       <div class="hero-actions">
-        <button id="quickRollBtn" class="primary-btn">🎲 Quick Roll</button>
-        <button id="openFiltersBtn" class="secondary-btn">Tune my pick</button>
+        <button id="quickRollBtn" class="primary-btn" type="button">🎲 Quick Roll</button>
+        <button id="openFiltersBtn" class="secondary-btn" type="button">Tune my pick</button>
       </div>
     </section>
 
@@ -47,8 +54,8 @@
         <p id="resultDescription"></p>
         <div id="resultTags" class="tag-row"></div>
         <div class="result-actions">
-          <button id="rerollBtn" class="primary-btn">🎲 Reroll</button>
-          <a id="anilistLink" class="secondary-btn link-btn" target="_blank" rel="noopener">View on AniList</a>
+          <button id="rerollBtn" class="primary-btn" type="button">🎲 Reroll</button>
+          <a id="anilistLink" class="secondary-btn link-btn" target="_blank" rel="noopener noreferrer">View on AniList</a>
         </div>
       </div>
     </section>
@@ -59,7 +66,7 @@
           <span class="eyebrow">SMART RANDOMIZER</span>
           <h2>Tell Tomo what you want</h2>
         </div>
-        <button id="closeFiltersBtn" class="icon-btn" aria-label="Close filters">×</button>
+        <button id="closeFiltersBtn" class="icon-btn" type="button" aria-label="Close filters">×</button>
       </div>
       <div class="filter-grid">
         <label>Genre
@@ -87,7 +94,56 @@
           </select>
         </label>
       </div>
-      <button id="smartRollBtn" class="primary-btn wide">✨ Find my anime</button>
+      <button id="smartRollBtn" class="primary-btn wide" type="button">✨ Find my anime</button>
+    </section>
+
+    <section id="anilistAccount" class="anilist-account-card" aria-live="polite">
+      <div id="anilistDisconnected">
+        <span class="eyebrow">YOUR ANILIST</span>
+        <h2>Bring your anime list into Tomo</h2>
+        <p>Connect your AniList account to load your Watching, Completed, Planning, Paused and Dropped lists. Your AniList list remains the source of truth.</p>
+        <div class="account-actions">
+          <button id="anilistConnectBtn" class="primary-btn" type="button">Connect AniList</button>
+          <span class="privacy-note">Login is handled by AniList. Tomo never stores your client secret.</span>
+        </div>
+      </div>
+
+      <div id="anilistLoading" class="account-loading" hidden>
+        <div class="loading-dot" aria-hidden="true"></div>
+        <div>
+          <strong>Connecting to AniList…</strong>
+          <p id="anilistLoadingCopy">Checking your account securely.</p>
+        </div>
+      </div>
+
+      <div id="anilistConnected" hidden>
+        <div class="account-profile">
+          <img id="anilistAvatar" class="account-avatar" alt="" loading="lazy" />
+          <div class="account-profile-copy">
+            <span class="eyebrow">CONNECTED</span>
+            <h2 id="anilistName">AniList account</h2>
+            <p id="anilistSyncMeta">Your list is ready.</p>
+          </div>
+          <button id="anilistDisconnectBtn" class="ghost-btn" type="button">Disconnect</button>
+        </div>
+        <div class="list-count-grid" aria-label="AniList anime list counts">
+          <div class="list-count"><strong id="countCurrent">0</strong><span>Watching</span></div>
+          <div class="list-count"><strong id="countCompleted">0</strong><span>Completed</span></div>
+          <div class="list-count"><strong id="countPlanning">0</strong><span>Planning</span></div>
+          <div class="list-count"><strong id="countPaused">0</strong><span>Paused</span></div>
+          <div class="list-count"><strong id="countDropped">0</strong><span>Dropped</span></div>
+        </div>
+        <div class="account-footer">
+          <span id="anilistListStatus">AniList connected.</span>
+          <button id="anilistRefreshBtn" class="secondary-btn" type="button">Refresh my lists</button>
+        </div>
+      </div>
+
+      <div id="anilistError" class="account-error" hidden>
+        <strong>Couldn’t connect to AniList.</strong>
+        <span id="anilistErrorText"></span>
+        <button id="anilistRetryBtn" class="secondary-btn" type="button">Try again</button>
+      </div>
     </section>
 
     <section class="section-block">
@@ -96,19 +152,17 @@
           <span class="eyebrow">DISCOVER</span>
           <h2>Trending on AniList</h2>
         </div>
-        <button id="refreshTrendingBtn" class="ghost-btn">Refresh</button>
+        <button id="refreshTrendingBtn" class="ghost-btn" type="button">Refresh</button>
       </div>
       <div id="trendingGrid" class="anime-grid"></div>
       <div id="trendingStatus" class="status-copy">Loading anime…</div>
     </section>
 
-    <section class="connect-card">
-      <div>
-        <span class="eyebrow">COMING NEXT</span>
-        <h2>Connect your AniList account</h2>
-        <p>Once connected, Tomo can use your Watching, Completed, Planning, Paused and Dropped lists for personal randomizers and stats.</p>
-      </div>
-      <button class="secondary-btn" disabled>AniList login — next update</button>
+    <section class="about-card">
+      <span class="eyebrow">ABOUT TOMO</span>
+      <h2>Tomo (友 / とも)</h2>
+      <p>Tomo (友 / とも) means “friend” or “companion” in Japanese.</p>
+      <p>Tomo is your personal anime companion — helping you discover what to watch next, connect your AniList library, randomize your backlog, track your watching progress, and make finding your next anime more fun and personal.</p>
     </section>
 
     <footer>
@@ -117,6 +171,10 @@
     </footer>
   </main>
 
-  <script src="app.js" defer></script>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="auth/anilist-config.js?v=1.0.1" defer></script>
+  <script src="auth/anilist-auth.js?v=1.0.1" defer></script>
+  <script src="app.js?v=1.0.1" defer></script>
 </body>
 </html>
