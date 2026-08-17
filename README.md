@@ -12,7 +12,7 @@ Tomo is a mobile-first PWA for anime discovery, random picks, and AniList-connec
 - Connected AniList profile
 - Read-only import of Watching, Completed, Planning, Paused, and Dropped list data
 - Status-count summary sourced from AniList
-- Installable PWA shell with repaired, cache-busted icon loading
+- Installable PWA shell with a Safari-safe embedded header-icon override and cache-busted install icons
 - Offline shell only — AniList API responses are never stored by the service worker
 - About Tomo / app-name meaning card
 
@@ -36,7 +36,8 @@ The registered AniList redirect URI should be:
 - `auth/anilist-auth.css` — account UI styling
 - `manifest.json` — PWA metadata
 - `service-worker.js` — offline shell
-- `icons/` — existing Tomo icon assets (legacy assets retained until the repaired live icon is confirmed)
+- `icons/header-icon.css` — embedded Safari/iOS-safe header artwork override
+- `icons/` — existing Tomo PNG/SVG install assets; legacy files are retained until live iPhone verification is complete
 
 ## Data rule
 
