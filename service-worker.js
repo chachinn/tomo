@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.0.2-auth1';
+const CACHE_NAME = 'tomo-shell-v1.0.3-headerimg';
 const SHELL = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const SHELL = [
   './auth/anilist-auth.js?v=1.0.2',
   './auth/anilist-auth.css?v=1.0.2',
   './manifest.json?v=1.0.2',
-  './icons/apple-touch-icon.png?v=1.0.2',
+  './icons/apple-touch-icon.png?v=1.0.3',
   './icons/icon-192.png?v=1.0.2',
   './icons/icon-512.png?v=1.0.2',
   './icons/maskable-192.png?v=1.0.2',
