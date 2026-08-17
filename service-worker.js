@@ -1,7 +1,7 @@
-const CACHE_NAME = 'tomo-shell-v0.1.0';
+const CACHE_NAME = 'tomo-shell-v0.1.1';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './manifest.json',
-  './icons/icon-96.png', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'
+  './icons/icon-192.png', './icons/icon.svg', './icons/icon-maskable.svg'
 ];
 
 self.addEventListener('install', event => {
