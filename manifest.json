@@ -1,7 +1,7 @@
 {
   "name": "Tomo — Anime Discovery Companion",
   "short_name": "Tomo",
-  "description": "Your anime companion for AniList-powered discovery, personal list sync, random picks, and watch planning.",
+  "description": "Tomo is your personal anime companion — helping you discover what to watch next, connect your AniList library, randomize your backlog, track your watching progress, and make finding your next anime more fun and personal.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -9,10 +9,34 @@
   "orientation": "portrait-primary",
   "background_color": "#fff7fb",
   "theme_color": "#ff8fbd",
-  "categories": ["entertainment", "lifestyle"],
+  "categories": [
+    "entertainment",
+    "lifestyle"
+  ],
   "icons": [
-    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
-    {"src":"icons/icon-maskable.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
+    {
+      "src": "icons/icon-192.png?v=1.0.2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png?v=1.0.2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png?v=1.0.2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png?v=1.0.2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
