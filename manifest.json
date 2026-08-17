@@ -11,8 +11,7 @@
   "theme_color": "#ff8fbd",
   "categories": ["entertainment", "lifestyle"],
   "icons": [
-    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"icons/tomo-icon-v3.png","sizes":"192x192","type":"image/png","purpose":"any"},
     {"src":"icons/icon-maskable.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
 }
