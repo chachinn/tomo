@@ -1,0 +1,43 @@
+.anilist-account-card {
+  margin-top: 28px;
+  padding: 26px;
+  border-radius: 30px;
+  border: 1px solid rgba(216,63,124,.14);
+  background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,232,242,.96));
+  box-shadow: var(--shadow);
+}
+.anilist-account-card p { max-width: 720px; }
+.account-actions, .account-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.privacy-note { color: var(--muted); font-size: .74rem; line-height: 1.45; }
+.account-loading { display: flex; align-items: center; gap: 14px; min-height: 92px; }
+.account-loading p { margin: 4px 0 0; }
+.loading-dot { width: 18px; height: 18px; flex: 0 0 auto; border: 3px solid rgba(216,63,124,.18); border-top-color: var(--pink-dark); border-radius: 50%; animation: tomo-spin .8s linear infinite; }
+.account-profile { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; }
+.account-avatar { width: 62px; height: 62px; border-radius: 19px; object-fit: cover; background: var(--pink-pale); border: 1px solid var(--line); }
+.account-profile-copy { min-width: 0; }
+.account-profile-copy h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-profile-copy p { margin: 5px 0 0; font-size: .78rem; }
+.list-count-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; margin-top: 20px; }
+.list-count { padding: 13px 9px; border-radius: 18px; background: rgba(255,255,255,.8); border: 1px solid var(--line); text-align: center; }
+.list-count strong { display: block; color: var(--pink-deep); font-size: 1.25rem; }
+.list-count span { display: block; margin-top: 3px; color: var(--muted); font-size: .66rem; font-weight: 800; }
+.account-footer { justify-content: space-between; margin-top: 16px; color: var(--muted); font-size: .76rem; }
+.account-error { display: grid; gap: 8px; padding: 14px; border-radius: 18px; background: #fff5f7; border: 1px solid rgba(179,43,84,.14); }
+.account-error strong { color: #9d2b51; }
+.account-error span { color: var(--muted); font-size: .82rem; }
+.account-error .secondary-btn { justify-self: start; }
+@keyframes tomo-spin { to { transform: rotate(360deg); } }
+@media (max-width: 700px) {
+  .list-count-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 520px) {
+  .anilist-account-card { padding: 21px; border-radius: 26px; }
+  .account-profile { grid-template-columns: auto 1fr; }
+  .account-profile > .ghost-btn { grid-column: 1 / -1; justify-self: start; }
+  .list-count-grid { grid-template-columns: repeat(2, 1fr); }
+  .account-footer { align-items: stretch; flex-direction: column; }
+  .account-footer .secondary-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-dot { animation: none; }
+}
