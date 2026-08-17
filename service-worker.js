@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v0.1.1';
+const CACHE_NAME = 'tomo-shell-v0.1.2';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './manifest.json',
   './icons/icon-192.png', './icons/icon.svg', './icons/icon-maskable.svg'
