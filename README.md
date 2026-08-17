@@ -2,23 +2,44 @@
 
 **Tomo — Your Anime Discovery Companion**
 
-Tomo is a mobile-first PWA for anime discovery and randomization using AniList public data. The foundation build includes trending anime, quick randomization, smart filters, installable PWA support, and Tomo's pink visual identity.
+Tomo is a mobile-first PWA for anime discovery, random picks, and AniList-connected personal list experiences.
 
-## Current milestone
+## Current user-facing v1 foundation
 
-**v0.1 — Foundation**
+- Public AniList-powered trending discovery
+- Quick Roll and filtered anime randomizer
+- AniList OAuth login using the browser/mobile Implicit Grant flow
+- Connected AniList profile
+- Read-only import of Watching, Completed, Planning, Paused, and Dropped list data
+- Status-count summary sourced from AniList
+- Installable PWA shell with repaired, cache-busted icon loading
+- Offline shell only — AniList API responses are never stored by the service worker
+- About Tomo / app-name meaning card
 
-## Next milestone
+## AniList authentication
 
-**AniList OAuth/account connection.** Personalized features such as Backlog Roulette, Watching/Completed/Planning imports, progress and score sync, and Anime DNA should proceed only after real-account integration is working and tested.
+The public client ID is stored in `auth/anilist-config.js`.
 
-## App files
+Tomo does **not** require or store the AniList client secret. OAuth access tokens are returned by AniList to the browser and kept locally on the current device so the PWA can stay connected. Tokens are never committed to this repository.
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `manifest.json`
-- `service-worker.js`
-- `icons/`
+The registered AniList redirect URI should be:
 
-Anime data is powered by AniList. Tomo is an independent companion and is not affiliated with AniList.
+`https://chachinn.github.io/tomo/`
+
+## Project structure
+
+- `index.html` — app shell
+- `styles.css` — core UI
+- `app.js` — discovery/randomizer + account UI orchestration
+- `auth/anilist-config.js` — public AniList client configuration
+- `auth/anilist-auth.js` — OAuth, authenticated requests, profile/list import
+- `auth/anilist-auth.css` — account UI styling
+- `manifest.json` — PWA metadata
+- `service-worker.js` — offline shell
+- `icons/` — existing Tomo icon assets (legacy assets retained until the repaired live icon is confirmed)
+
+## Data rule
+
+AniList remains the canonical anime list. Tomo adds discovery, randomization, personalization, stats, and challenges around it.
+
+List-write mutations are intentionally not exposed in this login build. A deliberate single-title sync test should be completed before normal watch-status/progress writing is enabled.
