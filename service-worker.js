@@ -1,11 +1,11 @@
-const CACHE_NAME = 'tomo-shell-v1.2.0-advanced-randomizer';
+const CACHE_NAME = 'tomo-shell-v1.2.1-home-priority';
 const SHELL = [
   './',
   './index.html',
   './styles.css?v=1.0.2',
   './navigation/tomo-nav.css?v=1.1.3',
   './app.js?v=1.1.3',
-  './navigation/tomo-nav.js?v=1.2.0',
+  './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.0',
   './randomizer/tomo-randomizer-filters.js?v=1.2.0',
   './library/tomo-library.css?v=1.1.1',
@@ -37,6 +37,14 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.hostname.endsWith('anilist.co')) return;
   if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.endsWith('/navigation/tomo-nav.js')) {
+    event.respondWith(
+      caches.match('./navigation/tomo-nav.js?v=1.2.1')
+        .then(cached => cached || fetch(request))
+    );
+    return;
+  }
 
   if (request.mode === 'navigate') {
     event.respondWith(
