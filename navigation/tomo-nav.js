@@ -41,17 +41,9 @@
   let drawerHideTimer = null;
   let previousFocus = null;
 
-  function safeSessionGet(key) {
-    try { return sessionStorage.getItem(key); } catch { return null; }
-  }
-
-  function safeSessionSet(key, value) {
-    try { sessionStorage.setItem(key, value); } catch {}
-  }
-
-  function safeSessionRemove(key) {
-    try { sessionStorage.removeItem(key); } catch {}
-  }
+  function safeSessionGet(key) { try { return sessionStorage.getItem(key); } catch { return null; } }
+  function safeSessionSet(key, value) { try { sessionStorage.setItem(key, value); } catch {} }
+  function safeSessionRemove(key) { try { sessionStorage.removeItem(key); } catch {} }
 
   function screenFromHash() {
     const hash = String(location.hash || '').replace(/^#/, '');
@@ -80,27 +72,20 @@
   function showScreen(screen, { historyMode = 'push', focusHeading = false } = {}) {
     if (!validScreens.has(screen)) screen = 'home';
     activeScreen = screen;
-
     for (const [name, node] of screens) {
       const active = name === screen;
       node.classList.toggle('active', active);
       node.setAttribute('aria-hidden', active ? 'false' : 'true');
     }
-
     setCurrentNav(screen);
     safeSessionSet(SCREEN_KEY, screen);
-
     if (historyMode !== 'none') {
-      const target = screen === 'home'
-        ? `${location.pathname}${location.search}`
-        : `${location.pathname}${location.search}#${screen}`;
+      const target = screen === 'home' ? `${location.pathname}${location.search}` : `${location.pathname}${location.search}#${screen}`;
       if (historyMode === 'replace') history.replaceState({ tomoScreen: screen }, '', target);
       else history.pushState({ tomoScreen: screen }, '', target);
     }
-
     closeDrawer({ restoreFocus: false });
     window.scrollTo({ top: 0, behavior: 'auto' });
-
     if (focusHeading) {
       requestAnimationFrame(() => {
         const heading = screens.get(screen)?.querySelector('h1, h2');
@@ -110,7 +95,6 @@
         heading.addEventListener('blur', () => heading.removeAttribute('tabindex'), { once: true });
       });
     }
-
     refreshAccountSummary();
   }
 
@@ -151,53 +135,43 @@
     if (!focusable.length) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+
+  function appendStyle(selector, href, dataName) {
+    if (document.querySelector(selector)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.dataset[dataName] = 'true';
+    document.head.appendChild(link);
+  }
+
+  function appendScript(selector, src, dataName) {
+    if (document.querySelector(selector)) return;
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.dataset[dataName] = 'true';
+    document.body.appendChild(script);
+  }
+
+  function loadFeatureModules() {
+    appendStyle('link[data-tomo-library-style]', 'library/tomo-library.css?v=1.1.1', 'tomoLibraryStyle');
+    appendScript('script[data-tomo-library-script]', 'library/tomo-library.js?v=1.1.1', 'tomoLibraryScript');
+    appendStyle('link[data-tomo-library-sync-style]', 'library/tomo-library-sync.css?v=1.1.2', 'tomoLibrarySyncStyle');
+    appendScript('script[data-tomo-library-sync-script]', 'library/tomo-library-sync.js?v=1.1.2', 'tomoLibrarySyncScript');
+
+    appendStyle('link[data-tomo-randomizer-style]', 'randomizer/tomo-randomizer-filters.css?v=1.2.0', 'tomoRandomizerStyle');
+    appendScript('script[data-tomo-randomizer-script]', 'randomizer/tomo-randomizer-filters.js?v=1.2.0', 'tomoRandomizerScript');
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js?v=1.2.0').catch(() => {});
     }
   }
 
-  function loadLibraryModule() {
-    if (!document.querySelector('link[data-tomo-library-style]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'library/tomo-library.css?v=1.1.1';
-      link.dataset.tomoLibraryStyle = 'true';
-      document.head.appendChild(link);
-    }
-
-    if (!document.querySelector('script[data-tomo-library-script]')) {
-      const script = document.createElement('script');
-      script.src = 'library/tomo-library.js?v=1.1.1';
-      script.defer = true;
-      script.dataset.tomoLibraryScript = 'true';
-      document.body.appendChild(script);
-    }
-
-    if (!document.querySelector('link[data-tomo-library-sync-style]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'library/tomo-library-sync.css?v=1.1.2';
-      link.dataset.tomoLibrarySyncStyle = 'true';
-      document.head.appendChild(link);
-    }
-
-    if (!document.querySelector('script[data-tomo-library-sync-script]')) {
-      const script = document.createElement('script');
-      script.src = 'library/tomo-library-sync.js?v=1.1.2';
-      script.defer = true;
-      script.dataset.tomoLibrarySyncScript = 'true';
-      document.body.appendChild(script);
-    }
-  }
-
-  menuButton?.addEventListener('click', () => {
-    if (drawer?.classList.contains('open')) closeDrawer();
-    else openDrawer();
-  });
+  menuButton?.addEventListener('click', () => drawer?.classList.contains('open') ? closeDrawer() : openDrawer());
   closeButton?.addEventListener('click', () => closeDrawer());
   overlay?.addEventListener('click', () => closeDrawer());
 
@@ -219,11 +193,7 @@
   }, true);
 
   connectButton?.addEventListener('click', () => safeSessionSet(RETURN_KEY, 'library'), { capture: true });
-
-  window.addEventListener('popstate', () => {
-    showScreen(screenFromHash() || 'home', { historyMode: 'none' });
-  });
-
+  window.addEventListener('popstate', () => showScreen(screenFromHash() || 'home', { historyMode: 'none' }));
   window.addEventListener('tomo:anilist-disconnected', refreshAccountSummary);
   window.addEventListener('tomo:anilist-auth-expired', refreshAccountSummary);
 
@@ -236,7 +206,7 @@
     showScreen(validScreens.has(initial) ? initial : 'home', { historyMode: 'replace' });
   }
 
-  loadLibraryModule();
+  loadFeatureModules();
 
   window.TomoNavigation = Object.freeze({
     go: screen => showScreen(screen),
