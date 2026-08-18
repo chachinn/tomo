@@ -151,6 +151,22 @@
       script.dataset.tomoLibraryScript = 'true';
       document.body.appendChild(script);
     }
+
+    if (!document.querySelector('link[data-tomo-library-sync-style]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'library/tomo-library-sync.css?v=1.1.2';
+      link.dataset.tomoLibrarySyncStyle = 'true';
+      document.head.appendChild(link);
+    }
+
+    if (!document.querySelector('script[data-tomo-library-sync-script]')) {
+      const script = document.createElement('script');
+      script.src = 'library/tomo-library-sync.js?v=1.1.2';
+      script.defer = true;
+      script.dataset.tomoLibrarySyncScript = 'true';
+      document.body.appendChild(script);
+    }
   }
 
   menuButton?.addEventListener('click', () => {
