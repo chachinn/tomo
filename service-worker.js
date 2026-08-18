@@ -23,6 +23,7 @@ const SHELL = [
   './js/core/anilist-client.js?v=1.0.0',
   './js/features/home-v1.js?v=1.0.0',
   './js/features/randomizer-modes.js?v=1.0.0',
+  './js/features/reroll-bridge.js?v=1.0.0',
   './js/features/discovery-hub.js?v=1.0.0',
   './js/features/library-insights.js?v=1.0.0',
   './js/features/airing-schedule.js?v=1.0.0',
