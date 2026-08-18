@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.3.3-strict-anilist-status';
+const CACHE_NAME = 'tomo-shell-v1.3.4-randomizer-integrity';
 const SHELL = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const SHELL = [
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
-  './randomizer/tomo-randomizer-action-fix.js?v=1.0.2',
+  './randomizer/tomo-randomizer-action-fix.js?v=1.0.3',
   './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0',
   './randomizer/tomo-filter-result-transition.js?v=1.0.0',
   './library/tomo-library.css?v=1.1.1',
@@ -19,11 +19,11 @@ const SHELL = [
   './auth/anilist-auth.js?v=1.1.3',
   './auth/anilist-auth.css?v=1.0.2',
   './css/tomo-v1.css?v=1.0.0',
-  './js/tomo-v1.js?v=1.0.0',
+  './js/tomo-v1.js?v=1.0.1',
   './js/core/storage.js?v=1.0.0',
   './js/core/anilist-client.js?v=1.0.0',
   './js/features/home-v1.js?v=1.0.0',
-  './js/features/randomizer-modes.js?v=1.0.0',
+  './js/features/randomizer-modes.js?v=1.0.1',
   './js/features/reroll-bridge.js?v=1.0.0',
   './js/features/discovery-hub.js?v=1.0.0',
   './js/features/library-insights.js?v=1.0.0',
@@ -57,7 +57,7 @@ self.addEventListener('fetch', event => {
       const text = await base.text();
       const loader = `\n;(() => {
         if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) {
-          const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.2'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s);
+          const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.3'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s);
         }
         if (!document.querySelector('script[data-tomo-quick-roll-filter-bridge]')) {
           const q=document.createElement('script'); q.src='randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0'; q.defer=true; q.dataset.tomoQuickRollFilterBridge='true'; document.body.appendChild(q);
@@ -69,7 +69,7 @@ self.addEventListener('fetch', event => {
           const l=document.createElement('link'); l.rel='stylesheet'; l.href='css/tomo-v1.css?v=1.0.0'; l.dataset.tomoV1Style='true'; document.head.appendChild(l);
         }
         if (!document.querySelector('script[data-tomo-v1-module]')) {
-          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.0'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
+          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.1'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
         }
       })();`;
       return new Response(text + loader, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' } });
