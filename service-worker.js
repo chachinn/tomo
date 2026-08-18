@@ -1,11 +1,13 @@
-const CACHE_NAME = 'tomo-shell-v1.1.3-bottom-tabs';
+const CACHE_NAME = 'tomo-shell-v1.2.0-advanced-randomizer';
 const SHELL = [
   './',
   './index.html',
   './styles.css?v=1.0.2',
   './navigation/tomo-nav.css?v=1.1.3',
   './app.js?v=1.1.3',
-  './navigation/tomo-nav.js?v=1.1.3',
+  './navigation/tomo-nav.js?v=1.2.0',
+  './randomizer/tomo-randomizer-filters.css?v=1.2.0',
+  './randomizer/tomo-randomizer-filters.js?v=1.2.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -22,19 +24,11 @@ const SHELL = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', event => {
