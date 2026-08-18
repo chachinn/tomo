@@ -44,6 +44,13 @@
     }
   }
 
+  function setResultSource(source) {
+    const result = $('resultSection');
+    if (!result) return;
+    if (source) result.dataset.tomoRollSource = source;
+    else delete result.dataset.tomoRollSource;
+  }
+
   function add(ctx, name, type, value, arg) {
     if (value == null || value === '' || (Array.isArray(value) && !value.length)) return;
     ctx.vars[name] = value;
@@ -132,6 +139,7 @@
   }
 
   function showResult(media) {
+    const result = $('resultSection');
     const cover = $('resultCover');
     const coverUrl = media?.coverImage?.extraLarge || media?.coverImage?.large || '';
     if (cover && coverUrl) cover.src = coverUrl;
@@ -144,7 +152,17 @@
     if ($('resultMeta')) $('resultMeta').textContent = [media.format, media.episodes && `${media.episodes} eps`, media.duration && `${media.duration} min`, media.averageScore && `${media.averageScore}%`, media.seasonYear].filter(Boolean).join(' · ');
     if ($('resultTags')) $('resultTags').replaceChildren(...(media.genres || []).slice(0, 6).map(name => { const span = document.createElement('span'); span.textContent = name; return span; }));
     if ($('anilistLink')) $('anilistLink').href = media.siteUrl || `https://anilist.co/anime/${media.id}`;
-    if ($('resultSection')) $('resultSection').hidden = false;
+    if (result) {
+      delete result.dataset.tomoMode;
+      Object.assign(result.dataset, {
+        tomoRollSource: 'filtered',
+        mediaId: String(media?.id || ''),
+        mediaTitle: titleOf(media),
+        mediaCover: media?.coverImage?.large || ''
+      });
+      result.hidden = false;
+    }
+    window.dispatchEvent(new CustomEvent('tomo:roll-result', { detail: { source: 'filtered', media } }));
   }
 
   async function run(optionsOverride = null) {
@@ -202,9 +220,19 @@
       run();
     });
 
+    $('quickRollBtn')?.addEventListener('click', () => {
+      lastSuccessfulOptions = null;
+      setResultSource('quick');
+    }, true);
+
+    window.addEventListener('tomo:roll-result', event => {
+      if (event?.detail?.source !== 'filtered') lastSuccessfulOptions = null;
+    });
+
     document.addEventListener('click', event => {
       const reroll = event.target.closest?.('#rerollBtn');
-      if (!reroll || !lastSuccessfulOptions) return;
+      const result = $('resultSection');
+      if (!reroll || result?.dataset?.tomoRollSource !== 'filtered' || !lastSuccessfulOptions) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       run(lastSuccessfulOptions);
