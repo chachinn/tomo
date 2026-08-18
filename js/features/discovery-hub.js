@@ -1,4 +1,4 @@
-import { anilistClient } from '../core/anilist-client.js';
+import { anilistClient } from '../core/anilist-client.js?v=1.0.0';
 
 const $ = id => document.getElementById(id);
 const titleOf = media => media?.title?.english || media?.title?.userPreferred || media?.title?.romaji || media?.title?.native || 'Untitled';
