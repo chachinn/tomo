@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.1.1-library';
+const CACHE_NAME = 'tomo-shell-v1.1.2-single-sync';
 const SHELL = [
   './',
   './index.html',
@@ -8,6 +8,8 @@ const SHELL = [
   './navigation/tomo-nav.js?v=1.1.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
+  './library/tomo-library-sync.css?v=1.1.2',
+  './library/tomo-library-sync.js?v=1.1.2',
   './auth/anilist-config.js?v=1.0.2',
   './auth/anilist-auth.js?v=1.0.2',
   './auth/anilist-auth.css?v=1.0.2',
