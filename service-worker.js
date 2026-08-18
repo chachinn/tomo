@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.2.7-randomize-action-fix';
+const CACHE_NAME = 'tomo-shell-v1.2.8-quick-roll-filters';
 const SHELL = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const SHELL = [
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
   './randomizer/tomo-randomizer-action-fix.js?v=1.0.0',
+  './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -43,14 +44,12 @@ self.addEventListener('fetch', event => {
     event.respondWith((async () => {
       const base = await caches.match('./navigation/tomo-nav.js?v=1.2.1') || await fetch(request);
       const text = await base.text();
-      const loader = `\n;(() => { if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) { const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.0'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s); } })();`;
+      const loader = `\n;(() => { if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) { const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.0'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s); } if (!document.querySelector('script[data-tomo-quick-roll-filter-bridge]')) { const q=document.createElement('script'); q.src='randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0'; q.defer=true; q.dataset.tomoQuickRollFilterBridge='true'; document.body.appendChild(q); } })();`;
       return new Response(text + loader, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' } });
     })());
     return;
   }
 
-  // Navigation still requests the earlier randomizer stylesheet path.
-  // Route it to v1.2.4 so iPhone receives the stable body-level sheet UI.
   if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.css')) {
     event.respondWith(
       caches.match('./randomizer/tomo-randomizer-filters.css?v=1.2.4')
@@ -59,8 +58,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Navigation still asks for randomizer JS v1.2.0. Keep routing every
-  // request for that module to the v1.2.6 relationship-quick-filter implementation plus action override.
   if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.js')) {
     event.respondWith(
       caches.match('./randomizer/tomo-randomizer-filters.js?v=1.2.6')
