@@ -9,7 +9,8 @@ const SEASONS={WINTER:'Winter',SPRING:'Spring',SUMMER:'Summer',FALL:'Fall'};
 const FALLBACK=['Action','Adventure','Comedy','Drama','Ecchi','Fantasy','Horror','Mahou Shoujo','Mecha','Music','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'];
 const S={scope:'any',list:new Set(['PLANNING']),genres:new Set(),formats:new Set(),release:new Set(),season:'',include:new Set(),exclude:new Set(),tagMode:'include',catalogGenres:FALLBACK,tags:[],loaded:false,last:null,busy:false};
 const overlay=document.createElement('div');overlay.className='randomizer-filter-overlay';overlay.hidden=true;document.body.append(overlay);
-panel.classList.add('tomo-randomizer-sheet');panel.querySelector('.filter-grid')?.setAttribute('hidden','');
+/* iOS/PWA layer fix: portal the sheet to the same top-level body stacking context as its backdrop. Keeping the panel inside the animated Randomize screen allowed Safari to trap the fixed sheet below the backdrop even with a higher z-index. */
+panel.classList.add('tomo-randomizer-sheet');panel.querySelector('.filter-grid')?.setAttribute('hidden','');document.body.append(panel);
 const host=document.createElement('div');host.className='advanced-randomizer-filters';host.innerHTML=`
 <section class="arf-section arf-source"><div class="arf-head"><div><span class="eyebrow">SOURCE</span><h3>Where should Tomo pick from?</h3></div><button id="arfReset" class="arf-link" type="button">Reset</button></div>
 <div class="arf-segmented"><button data-scope="any" aria-pressed="true">Anywhere</button><button data-scope="list" aria-pressed="false">My AniList</button><button data-scope="not-list" aria-pressed="false">Not on my list</button></div><p id="arfHint" class="arf-hint"></p>
