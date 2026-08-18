@@ -3,10 +3,12 @@ import { initRandomizerModes } from './features/randomizer-modes.js?v=1.0.0';
 import { initDiscoveryHub } from './features/discovery-hub.js?v=1.0.0';
 import { initLibraryInsights } from './features/library-insights.js?v=1.0.0';
 import { initAiringSchedule } from './features/airing-schedule.js?v=1.0.0';
+import { initRerollBridge } from './features/reroll-bridge.js?v=1.0.0';
 
 async function boot() {
   await initHomeV1();
   initRandomizerModes();
+  initRerollBridge();
   initDiscoveryHub();
   initLibraryInsights();
   initAiringSchedule();
