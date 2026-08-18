@@ -1,5 +1,5 @@
-import { anilistClient } from '../core/anilist-client.js';
-import { store } from '../core/storage.js';
+import { anilistClient } from '../core/anilist-client.js?v=1.0.0';
+import { store } from '../core/storage.js?v=1.0.0';
 
 const $=id=>document.getElementById(id);
 const titleOf=m=>m?.title?.english||m?.title?.userPreferred||m?.title?.romaji||m?.title?.native||'Untitled';
