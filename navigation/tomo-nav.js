@@ -135,6 +135,24 @@
     }
   }
 
+  function loadLibraryModule() {
+    if (!document.querySelector('link[data-tomo-library-style]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'library/tomo-library.css?v=1.1.1';
+      link.dataset.tomoLibraryStyle = 'true';
+      document.head.appendChild(link);
+    }
+
+    if (!document.querySelector('script[data-tomo-library-script]')) {
+      const script = document.createElement('script');
+      script.src = 'library/tomo-library.js?v=1.1.1';
+      script.defer = true;
+      script.dataset.tomoLibraryScript = 'true';
+      document.body.appendChild(script);
+    }
+  }
+
   menuButton?.addEventListener('click', () => {
     if (drawer?.classList.contains('open')) closeDrawer();
     else openDrawer();
@@ -176,6 +194,8 @@
     const initial = screenFromHash() || safeSessionGet(SCREEN_KEY) || 'home';
     showScreen(validScreens.has(initial) ? initial : 'home', { historyMode: 'replace' });
   }
+
+  loadLibraryModule();
 
   window.TomoNavigation = Object.freeze({
     go: screen => showScreen(screen),
