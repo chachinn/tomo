@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.2.6-relationship-quick-filters';
+const CACHE_NAME = 'tomo-shell-v1.2.7-randomize-action-fix';
 const SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const SHELL = [
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
+  './randomizer/tomo-randomizer-action-fix.js?v=1.0.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -39,10 +40,12 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.endsWith('/navigation/tomo-nav.js')) {
-    event.respondWith(
-      caches.match('./navigation/tomo-nav.js?v=1.2.1')
-        .then(cached => cached || fetch(request))
-    );
+    event.respondWith((async () => {
+      const base = await caches.match('./navigation/tomo-nav.js?v=1.2.1') || await fetch(request);
+      const text = await base.text();
+      const loader = `\n;(() => { if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) { const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.0'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s); } })();`;
+      return new Response(text + loader, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' } });
+    })());
     return;
   }
 
@@ -57,7 +60,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Navigation still asks for randomizer JS v1.2.0. Keep routing every
-  // request for that module to the v1.2.6 relationship-quick-filter implementation.
+  // request for that module to the v1.2.6 relationship-quick-filter implementation plus action override.
   if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.js')) {
     event.respondWith(
       caches.match('./randomizer/tomo-randomizer-filters.js?v=1.2.6')
