@@ -1,17 +1,17 @@
-const CACHE_NAME = 'tomo-shell-v1.1.2-single-sync';
+const CACHE_NAME = 'tomo-shell-v1.1.3-bottom-tabs';
 const SHELL = [
   './',
   './index.html',
   './styles.css?v=1.0.2',
-  './navigation/tomo-nav.css?v=1.1.0',
-  './app.js?v=1.0.2',
-  './navigation/tomo-nav.js?v=1.1.0',
+  './navigation/tomo-nav.css?v=1.1.3',
+  './app.js?v=1.1.3',
+  './navigation/tomo-nav.js?v=1.1.3',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
   './library/tomo-library-sync.js?v=1.1.2',
   './auth/anilist-config.js?v=1.0.2',
-  './auth/anilist-auth.js?v=1.0.2',
+  './auth/anilist-auth.js?v=1.1.3',
   './auth/anilist-auth.css?v=1.0.2',
   './manifest.json?v=1.0.2',
   './icons/apple-touch-icon.png?v=1.0.3',
