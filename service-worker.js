@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.3.1-randomizer-empty-page-fix';
+const CACHE_NAME = 'tomo-shell-v1.3.2-filter-result-transition';
 const SHELL = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const SHELL = [
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
   './randomizer/tomo-randomizer-action-fix.js?v=1.0.1',
   './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0',
+  './randomizer/tomo-filter-result-transition.js?v=1.0.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -60,6 +61,9 @@ self.addEventListener('fetch', event => {
         }
         if (!document.querySelector('script[data-tomo-quick-roll-filter-bridge]')) {
           const q=document.createElement('script'); q.src='randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0'; q.defer=true; q.dataset.tomoQuickRollFilterBridge='true'; document.body.appendChild(q);
+        }
+        if (!document.querySelector('script[data-tomo-filter-result-transition]')) {
+          const r=document.createElement('script'); r.src='randomizer/tomo-filter-result-transition.js?v=1.0.0'; r.defer=true; r.dataset.tomoFilterResultTransition='true'; document.body.appendChild(r);
         }
         if (!document.querySelector('link[data-tomo-v1-style]')) {
           const l=document.createElement('link'); l.rel='stylesheet'; l.href='css/tomo-v1.css?v=1.0.0'; l.dataset.tomoV1Style='true'; document.head.appendChild(l);
