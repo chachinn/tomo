@@ -1,5 +1,5 @@
 import { initHomeV1 } from './features/home-v1.js?v=1.0.0';
-import { initRandomizerModes } from './features/randomizer-modes.js?v=1.0.0';
+import { initRandomizerModes } from './features/randomizer-modes.js?v=1.0.1';
 import { initDiscoveryHub } from './features/discovery-hub.js?v=1.0.0';
 import { initLibraryInsights } from './features/library-insights.js?v=1.0.0';
 import { initAiringSchedule } from './features/airing-schedule.js?v=1.0.0';
