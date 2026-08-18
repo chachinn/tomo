@@ -154,12 +154,21 @@
       const ctx = await buildContext(options);
       const first = await fetchPage(ctx, 1);
       const info = first?.Page?.pageInfo || {};
-      let pool = first?.Page?.media || [];
-      if (!pool.length) throw new Error('No anime match these filters. Try another list status or loosen one or two filters.');
+      const firstPool = first?.Page?.media || [];
+      if (!firstPool.length) throw new Error('No anime match these filters. Try another list status or loosen one or two filters.');
+
+      let pool = firstPool;
       const last = Math.max(1, Number(info.lastPage || 1));
       const pageNumber = Math.floor(Math.random() * last) + 1;
-      if (pageNumber !== 1) pool = (await fetchPage(ctx, pageNumber))?.Page?.media || [];
-      if (!pool.length) throw new Error('AniList returned an empty result page. Tap Randomize again.');
+      if (pageNumber !== 1) {
+        const randomPage = (await fetchPage(ctx, pageNumber))?.Page?.media || [];
+        // AniList can occasionally report a lastPage that produces an empty page,
+        // especially with restrictive id_in/list-status filters. Never fail a valid
+        // search just because that randomized page is empty; safely fall back to
+        // the already verified first page instead.
+        if (randomPage.length) pool = randomPage;
+      }
+
       const pick = pool[Math.floor(Math.random() * pool.length)];
       showResult(pick);
       setStatus('');
