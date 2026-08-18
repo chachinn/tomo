@@ -1,4 +1,4 @@
-import { anilistClient } from '../core/anilist-client.js';
+import { anilistClient } from '../core/anilist-client.js?v=1.0.0';
 
 function whenText(timestamp) {
   const date = new Date(Number(timestamp || 0) * 1000);
