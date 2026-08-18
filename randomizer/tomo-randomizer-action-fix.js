@@ -3,6 +3,7 @@
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const $ = id => document.getElementById(id);
+  let lastSuccessfulOptions = null;
 
   async function waitForRandomizer() {
     for (let i = 0; i < 80; i += 1) {
@@ -54,14 +55,17 @@
     if (!window.TomoAniList?.isConnected?.()) throw new Error('Connect your AniList account first, or switch Source to Anywhere.');
     const viewer = window.TomoAniList.getViewer?.();
     if (!viewer?.id) throw new Error('AniList account details are still loading. Try again in a moment.');
+
+    const requested = [...new Set((statuses || []).filter(Boolean))];
     const data = await window.TomoAniList.request(`
-      query ($userId: Int!) {
-        MediaListCollection(userId: $userId, type: ANIME) {
+      query ($userId: Int!, $statuses: [MediaListStatus]) {
+        MediaListCollection(userId: $userId, type: ANIME, status_in: $statuses) {
           lists { entries { mediaId status } }
         }
       }
-    `, { userId: Number(viewer.id) }, { authenticated: true });
-    const wanted = new Set(statuses || []);
+    `, { userId: Number(viewer.id), statuses: requested }, { authenticated: true });
+
+    const wanted = new Set(requested);
     return [...new Set((data?.MediaListCollection?.lists || [])
       .flatMap(list => list?.entries || [])
       .filter(entry => wanted.has(entry?.status))
@@ -70,11 +74,12 @@
   }
 
   async function buildContext(options) {
-    const ctx = { vars: { page: 1 }, defs: ['$page:Int'], args: ['type:ANIME', 'isAdult:false'], auth: false };
+    const ctx = { vars: { page: 1 }, defs: ['$page:Int'], args: ['type:ANIME', 'isAdult:false'], auth: false, allowedIds: null };
     if (options.scope === 'list') {
       if (!options.listStatuses?.length) throw new Error('Choose at least one AniList status.');
       const ids = await listIds(options.listStatuses);
       if (!ids.length) throw new Error('There are no anime in the selected AniList statuses.');
+      ctx.allowedIds = new Set(ids);
       add(ctx, 'ids', '[Int]', ids, 'id_in');
       ctx.auth = true;
     } else if (options.scope === 'not-list') {
@@ -142,7 +147,7 @@
     if ($('resultSection')) $('resultSection').hidden = false;
   }
 
-  async function run() {
+  async function run(optionsOverride = null) {
     const button = $('smartRollBtn');
     if (!button || button.dataset.tomoActionBusy === 'true') return;
     button.dataset.tomoActionBusy = 'true';
@@ -150,26 +155,27 @@
     button.textContent = 'Finding your anime…';
     setStatus('Searching AniList…');
     try {
-      const options = window.TomoAdvancedRandomizer.getOptions();
+      const options = optionsOverride || window.TomoAdvancedRandomizer.getOptions();
       const ctx = await buildContext(options);
       const first = await fetchPage(ctx, 1);
       const info = first?.Page?.pageInfo || {};
-      const firstPool = first?.Page?.media || [];
+      const firstPool = (first?.Page?.media || []).filter(media => !ctx.allowedIds || ctx.allowedIds.has(Number(media?.id)));
       if (!firstPool.length) throw new Error('No anime match these filters. Try another list status or loosen one or two filters.');
 
       let pool = firstPool;
       const last = Math.max(1, Number(info.lastPage || 1));
       const pageNumber = Math.floor(Math.random() * last) + 1;
       if (pageNumber !== 1) {
-        const randomPage = (await fetchPage(ctx, pageNumber))?.Page?.media || [];
-        // AniList can occasionally report a lastPage that produces an empty page,
-        // especially with restrictive id_in/list-status filters. Never fail a valid
-        // search just because that randomized page is empty; safely fall back to
-        // the already verified first page instead.
+        const randomPage = ((await fetchPage(ctx, pageNumber))?.Page?.media || []).filter(media => !ctx.allowedIds || ctx.allowedIds.has(Number(media?.id)));
         if (randomPage.length) pool = randomPage;
       }
 
       const pick = pool[Math.floor(Math.random() * pool.length)];
+      if (!pick || (ctx.allowedIds && !ctx.allowedIds.has(Number(pick.id)))) {
+        throw new Error('Tomo could not verify this pick against your selected AniList status. Please try again.');
+      }
+
+      lastSuccessfulOptions = JSON.parse(JSON.stringify(options));
       showResult(pick);
       setStatus('');
       window.TomoAdvancedRandomizer.close();
@@ -195,7 +201,16 @@
       event.stopPropagation();
       run();
     });
+
+    document.addEventListener('click', event => {
+      const reroll = event.target.closest?.('#rerollBtn');
+      if (!reroll || !lastSuccessfulOptions) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      run(lastSuccessfulOptions);
+    }, true);
   }
 
+  window.TomoRandomizerActionFix = Object.freeze({ run: options => run(options || null) });
   install();
 })();
