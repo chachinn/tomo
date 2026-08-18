@@ -1,9 +1,11 @@
-const CACHE_NAME = 'tomo-shell-v1.0.3-headerimg';
+const CACHE_NAME = 'tomo-shell-v1.1.0-navigation';
 const SHELL = [
   './',
   './index.html',
   './styles.css?v=1.0.2',
+  './navigation/tomo-nav.css?v=1.1.0',
   './app.js?v=1.0.2',
+  './navigation/tomo-nav.js?v=1.1.0',
   './auth/anilist-config.js?v=1.0.2',
   './auth/anilist-auth.js?v=1.0.2',
   './auth/anilist-auth.css?v=1.0.2',
