@@ -112,25 +112,36 @@
   async function rollAnime(options = {}) {
     lastRollOptions = options;
     const page = Math.floor(Math.random() * 40) + 1;
-    const variables = {
-      page,
-      genre: options.genre || null,
-      format: options.format || null,
-      maxEpisodes: options.maxEpisodes ? Number(options.maxEpisodes) : null,
-      minScore: options.minScore ? Number(options.minScore) : null
-    };
+    const variables = { page };
+    const variableDefs = ['$page: Int'];
+    const mediaArgs = ['type: ANIME', 'isAdult: false'];
+
+    if (options.genre) {
+      variables.genre = options.genre;
+      variableDefs.push('$genre: String');
+      mediaArgs.push('genre: $genre');
+    }
+    if (options.format) {
+      variables.format = options.format;
+      variableDefs.push('$format: MediaFormat');
+      mediaArgs.push('format: $format');
+    }
+    if (options.maxEpisodes) {
+      variables.maxEpisodes = Number(options.maxEpisodes);
+      variableDefs.push('$maxEpisodes: Int');
+      mediaArgs.push('episodes_lesser: $maxEpisodes');
+    }
+    if (options.minScore) {
+      variables.minScore = Number(options.minScore);
+      variableDefs.push('$minScore: Int');
+      mediaArgs.push('averageScore_greater: $minScore');
+    }
+    mediaArgs.push('sort: POPULARITY_DESC');
+
     const query = `
-      query ($page: Int, $genre: String, $format: MediaFormat, $maxEpisodes: Int, $minScore: Int) {
+      query (${variableDefs.join(', ')}) {
         Page(page: $page, perPage: 25) {
-          media(
-            type: ANIME,
-            isAdult: false,
-            genre: $genre,
-            format: $format,
-            episodes_lesser: $maxEpisodes,
-            averageScore_greater: $minScore,
-            sort: POPULARITY_DESC
-          ) {
+          media(${mediaArgs.join(', ')}) {
             id
             title { romaji english native }
             description(asHtml: true)
@@ -314,7 +325,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=1.0.1').catch(() => {});
+      navigator.serviceWorker.register('./service-worker.js?v=1.1.3').catch(() => {});
     });
   }
 
