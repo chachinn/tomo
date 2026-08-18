@@ -134,6 +134,11 @@
       throw new Error('AniList could not be reached. Check your connection and try again.');
     }
 
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {}
+
     if (response.status === 401) {
       clearAuth();
       window.dispatchEvent(new CustomEvent('tomo:anilist-auth-expired'));
@@ -145,13 +150,13 @@
       throw new Error(`AniList is rate-limiting requests. Try again in about ${retryAfter} seconds.`);
     }
 
-    if (!response.ok) throw new Error(`AniList request failed (${response.status}).`);
-
-    const payload = await response.json();
-    if (payload.errors?.length) {
+    if (payload?.errors?.length) {
       const first = payload.errors[0];
-      throw new Error(first?.message || 'AniList returned an error.');
+      throw new Error(first?.message || `AniList request failed (${response.status}).`);
     }
+
+    if (!response.ok) throw new Error(`AniList request failed (${response.status}).`);
+    if (!payload) throw new Error('AniList returned an unreadable response. Please try again.');
     return payload.data;
   }
 
