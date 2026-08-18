@@ -1,5 +1,5 @@
-import { anilistClient } from '../core/anilist-client.js';
-import { store } from '../core/storage.js';
+import { anilistClient } from '../core/anilist-client.js?v=1.0.0';
+import { store } from '../core/storage.js?v=1.0.0';
 
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -42,7 +42,7 @@ async function renderStats(host) {
       stat('Top genres', fav || '—'),
       stat('Favorite formats', (s.formats || []).map(f => String(f.format || '').replaceAll('_',' ')).filter(Boolean).join(', ') || '—')
     ].join('');
-  } catch (error) {
+  } catch {
     const entries = window.TomoLibrary?.getEntries?.() || [];
     const completed = entries.filter(e => e.status === 'COMPLETED').length;
     const planning = entries.filter(e => e.status === 'PLANNING').length;
