@@ -1,6 +1,7 @@
 const memory = new Map();
 const pending = new Map();
 let lastRequestAt = 0;
+let queue = Promise.resolve();
 const MIN_GAP_MS = 2100;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -14,6 +15,13 @@ async function waitForService() {
   throw new Error('AniList services are still loading.');
 }
 
+async function execute(query, variables, authenticated) {
+  const wait = Math.max(0, MIN_GAP_MS - (Date.now() - lastRequestAt));
+  if (wait) await sleep(wait);
+  lastRequestAt = Date.now();
+  return window.TomoAniList.request(query, variables, { authenticated });
+}
+
 async function request(query, variables = {}, { authenticated = false, ttl = 60000, force = false } = {}) {
   await waitForService();
   const key = stableKey(query, variables, authenticated);
@@ -21,14 +29,11 @@ async function request(query, variables = {}, { authenticated = false, ttl = 600
   if (!force && cached && Date.now() - cached.time < ttl) return cached.data;
   if (pending.has(key)) return pending.get(key);
 
-  const work = (async () => {
-    const wait = Math.max(0, MIN_GAP_MS - (Date.now() - lastRequestAt));
-    if (wait) await sleep(wait);
-    lastRequestAt = Date.now();
-    const data = await window.TomoAniList.request(query, variables, { authenticated });
+  const work = (queue = queue.catch(() => {}).then(async () => {
+    const data = await execute(query, variables, authenticated);
     memory.set(key, { time: Date.now(), data });
     return data;
-  })().finally(() => pending.delete(key));
+  })).finally(() => pending.delete(key));
 
   pending.set(key, work);
   return work;
