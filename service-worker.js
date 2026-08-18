@@ -25,6 +25,7 @@ const SHELL = [
   './js/features/randomizer-modes.js?v=1.0.0',
   './js/features/discovery-hub.js?v=1.0.0',
   './js/features/library-insights.js?v=1.0.0',
+  './js/features/airing-schedule.js?v=1.0.0',
   './manifest.json?v=1.0.2',
   './icons/apple-touch-icon.png?v=1.0.3',
   './icons/icon-192.png?v=1.0.2',
@@ -82,28 +83,22 @@ self.addEventListener('fetch', event => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
+    event.respondWith(fetch(request).then(response => {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+      return response;
+    }).catch(() => caches.match('./index.html')));
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then(cached => {
-      const network = fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
-      }).catch(() => cached);
-      return cached || network;
-    })
-  );
+  event.respondWith(caches.match(request).then(cached => {
+    const network = fetch(request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+      }
+      return response;
+    }).catch(() => cached);
+    return cached || network;
+  }));
 });
