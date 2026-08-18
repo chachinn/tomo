@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.2.2-tune-sheet-layer';
+const CACHE_NAME = 'tomo-shell-v1.2.3-tune-sheet-portal';
 const SHELL = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const SHELL = [
   './app.js?v=1.1.3',
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.2',
-  './randomizer/tomo-randomizer-filters.js?v=1.2.0',
+  './randomizer/tomo-randomizer-filters.js?v=1.2.3',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -52,6 +52,17 @@ self.addEventListener('fetch', event => {
   if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.css')) {
     event.respondWith(
       caches.match('./randomizer/tomo-randomizer-filters.css?v=1.2.2')
+        .then(cached => cached || fetch(request))
+    );
+    return;
+  }
+
+  // The navigation module still asks for randomizer JS v1.2.0. Route every
+  // request for that module to the v1.2.3 body-portal implementation so the
+  // fixed sheet and its backdrop share the same top-level stacking context.
+  if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.js')) {
+    event.respondWith(
+      caches.match('./randomizer/tomo-randomizer-filters.js?v=1.2.3')
         .then(cached => cached || fetch(request))
     );
     return;
