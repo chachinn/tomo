@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.2.1-home-priority';
+const CACHE_NAME = 'tomo-shell-v1.2.2-tune-sheet-layer';
 const SHELL = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const SHELL = [
   './navigation/tomo-nav.css?v=1.1.3',
   './app.js?v=1.1.3',
   './navigation/tomo-nav.js?v=1.2.1',
-  './randomizer/tomo-randomizer-filters.css?v=1.2.0',
+  './randomizer/tomo-randomizer-filters.css?v=1.2.2',
   './randomizer/tomo-randomizer-filters.js?v=1.2.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
@@ -41,6 +41,17 @@ self.addEventListener('fetch', event => {
   if (url.pathname.endsWith('/navigation/tomo-nav.js')) {
     event.respondWith(
       caches.match('./navigation/tomo-nav.js?v=1.2.1')
+        .then(cached => cached || fetch(request))
+    );
+    return;
+  }
+
+  // The navigation module still asks for the v1.2.0 randomizer stylesheet.
+  // Route that request to the repaired v1.2.2 asset in this cache so iOS
+  // cannot keep serving the broken stacking-context version.
+  if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.css')) {
+    event.respondWith(
+      caches.match('./randomizer/tomo-randomizer-filters.css?v=1.2.2')
         .then(cached => cached || fetch(request))
     );
     return;
