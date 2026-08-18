@@ -6,6 +6,31 @@
   const overlay = document.getElementById('drawerOverlay');
   const closeButton = document.getElementById('closeDrawer');
   const screens = new Map([...document.querySelectorAll('[data-screen]')].map(node => [node.dataset.screen, node]));
+
+  function ensureBottomNavigation() {
+    if (document.getElementById('tomoBottomNav')) return;
+    const nav = document.createElement('nav');
+    nav.id = 'tomoBottomNav';
+    nav.className = 'tomo-bottom-nav';
+    nav.setAttribute('aria-label', 'Primary navigation');
+    nav.innerHTML = `
+      <button class="tomo-bottom-tab" type="button" data-nav-screen="home" aria-label="Home">
+        <span class="tomo-bottom-tab-icon" aria-hidden="true">⌂</span><span>Home</span>
+      </button>
+      <button class="tomo-bottom-tab" type="button" data-nav-screen="randomize" aria-label="Randomize">
+        <span class="tomo-bottom-tab-icon" aria-hidden="true">🎲</span><span>Randomize</span>
+      </button>
+      <button class="tomo-bottom-tab" type="button" data-nav-screen="library" aria-label="My Anime">
+        <span class="tomo-bottom-tab-icon" aria-hidden="true">♡</span><span>My Anime</span>
+      </button>
+      <button class="tomo-bottom-tab" type="button" data-nav-screen="discover" aria-label="Discover">
+        <span class="tomo-bottom-tab-icon" aria-hidden="true">✦</span><span>Discover</span>
+      </button>
+    `;
+    document.body.appendChild(nav);
+  }
+
+  ensureBottomNavigation();
   const navButtons = [...document.querySelectorAll('[data-nav-screen]')];
   const accountStatus = document.getElementById('drawerAccountStatus');
   const connectButton = document.getElementById('anilistConnectBtn');
