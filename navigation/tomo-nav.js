@@ -30,7 +30,60 @@
     document.body.appendChild(nav);
   }
 
+  function prepareHomePriority() {
+    const homeAbout = document.querySelector('.home-quick-grid [data-nav-screen="about"]');
+    if (homeAbout) {
+      homeAbout.removeAttribute('data-nav-screen');
+      homeAbout.dataset.homeQuickRoll = 'true';
+      homeAbout.setAttribute('aria-label', 'Quick Roll — surprise me with an anime');
+      homeAbout.innerHTML = '<span>⚡</span><strong>Quick Roll</strong><small>Surprise me now</small>';
+    }
+
+    const aboutButton = drawer?.querySelector('.drawer-section [data-nav-screen="about"]');
+    const aboutSection = aboutButton?.closest('.drawer-section');
+    const footer = drawer?.querySelector('.drawer-footer');
+    if (aboutButton && aboutSection) {
+      aboutButton.className = 'drawer-about-link';
+      aboutButton.innerHTML = '<span class="drawer-about-glyph" aria-hidden="true">友</span><span>About Tomo</span>';
+      if (footer) footer.before(aboutButton);
+      else drawer.appendChild(aboutButton);
+      aboutSection.remove();
+    }
+
+    if (!document.getElementById('tomoHomePriorityStyle')) {
+      const style = document.createElement('style');
+      style.id = 'tomoHomePriorityStyle';
+      style.textContent = `
+        .drawer-about-link {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          width: max-content;
+          margin: 2px 8px 10px;
+          padding: 6px 8px;
+          border: 0;
+          border-radius: 10px;
+          background: transparent;
+          color: var(--muted);
+          font: inherit;
+          font-size: .66rem;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .drawer-about-link:active { transform: scale(.98); }
+        .drawer-about-link:focus-visible {
+          outline: 2px solid rgba(216,63,124,.35);
+          outline-offset: 1px;
+        }
+        .drawer-about-glyph { font-size: .82rem; opacity: .8; }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
   ensureBottomNavigation();
+  prepareHomePriority();
+
   const navButtons = [...document.querySelectorAll('[data-nav-screen]')];
   const accountStatus = document.getElementById('drawerAccountStatus');
   const connectButton = document.getElementById('anilistConnectBtn');
@@ -167,7 +220,7 @@
     appendScript('script[data-tomo-randomizer-script]', 'randomizer/tomo-randomizer-filters.js?v=1.2.0', 'tomoRandomizerScript');
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js?v=1.2.0').catch(() => {});
+      navigator.serviceWorker.register('./service-worker.js?v=1.2.1').catch(() => {});
     }
   }
 
@@ -183,6 +236,14 @@
     }
     trapDrawerFocus(event);
   });
+
+  document.addEventListener('click', event => {
+    const quickRoll = event.target.closest?.('[data-home-quick-roll]');
+    if (!quickRoll) return;
+    event.preventDefault();
+    showScreen('randomize', { historyMode: activeScreen === 'randomize' ? 'replace' : 'push' });
+    requestAnimationFrame(() => document.getElementById('quickRollBtn')?.click());
+  }, true);
 
   document.addEventListener('click', event => {
     const button = event.target.closest?.('[data-nav-screen]');
