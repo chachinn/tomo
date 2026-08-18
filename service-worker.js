@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.2.5-anilist-filters';
+const CACHE_NAME = 'tomo-shell-v1.2.6-relationship-quick-filters';
 const SHELL = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const SHELL = [
   './app.js?v=1.1.3',
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
-  './randomizer/tomo-randomizer-filters.js?v=1.2.5',
+  './randomizer/tomo-randomizer-filters.js?v=1.2.6',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
   './library/tomo-library-sync.css?v=1.1.2',
@@ -57,10 +57,10 @@ self.addEventListener('fetch', event => {
   }
 
   // Navigation still asks for randomizer JS v1.2.0. Keep routing every
-  // request for that module to the v1.2.5 AniList-filter implementation.
+  // request for that module to the v1.2.6 relationship-quick-filter implementation.
   if (url.pathname.endsWith('/randomizer/tomo-randomizer-filters.js')) {
     event.respondWith(
-      caches.match('./randomizer/tomo-randomizer-filters.js?v=1.2.5')
+      caches.match('./randomizer/tomo-randomizer-filters.js?v=1.2.6')
         .then(cached => cached || fetch(request))
     );
     return;
