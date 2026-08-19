@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.3.4-randomizer-integrity';
+const CACHE_NAME = 'tomo-shell-v1.3.5-expanded-filters-fast-reroll';
 const SHELL = [
   './',
   './index.html',
@@ -8,8 +8,9 @@ const SHELL = [
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
-  './randomizer/tomo-randomizer-action-fix.js?v=1.0.3',
-  './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0',
+  './randomizer/tomo-randomizer-filter-expansion.js?v=1.0.0',
+  './randomizer/tomo-randomizer-action-fix.js?v=1.0.4',
+  './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.1',
   './randomizer/tomo-filter-result-transition.js?v=1.0.0',
   './library/tomo-library.css?v=1.1.1',
   './library/tomo-library.js?v=1.1.1',
@@ -56,11 +57,14 @@ self.addEventListener('fetch', event => {
       const base = await caches.match('./navigation/tomo-nav.js?v=1.2.1') || await fetch(request);
       const text = await base.text();
       const loader = `\n;(() => {
+        if (!document.querySelector('script[data-tomo-randomizer-filter-expansion]')) {
+          const e=document.createElement('script'); e.src='randomizer/tomo-randomizer-filter-expansion.js?v=1.0.0'; e.defer=true; e.dataset.tomoRandomizerFilterExpansion='true'; document.body.appendChild(e);
+        }
         if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) {
-          const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.3'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s);
+          const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.4'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s);
         }
         if (!document.querySelector('script[data-tomo-quick-roll-filter-bridge]')) {
-          const q=document.createElement('script'); q.src='randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.0'; q.defer=true; q.dataset.tomoQuickRollFilterBridge='true'; document.body.appendChild(q);
+          const q=document.createElement('script'); q.src='randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.1'; q.defer=true; q.dataset.tomoQuickRollFilterBridge='true'; document.body.appendChild(q);
         }
         if (!document.querySelector('script[data-tomo-filter-result-transition]')) {
           const r=document.createElement('script'); r.src='randomizer/tomo-filter-result-transition.js?v=1.0.0'; r.defer=true; r.dataset.tomoFilterResultTransition='true'; document.body.appendChild(r);
