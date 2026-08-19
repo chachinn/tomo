@@ -35,12 +35,12 @@
     ['Iyashikei', 'Iyashikei'],
     ['Coming of Age', 'Coming of Age'],
     ['Family Life', 'Family Life'],
+    ['Found Family', 'Found Family'],
     ['Urban', 'Urban'],
     ['Rural', 'Rural'],
     ['Historical', 'Historical'],
     ['Time Skip', 'Time Skip'],
-    ['Revenge', 'Revenge'],
-    ['Found Family', 'Found Family']
+    ['Revenge', 'Revenge']
   ];
 
   function tagState(tag) {
@@ -95,11 +95,13 @@
     }
   }
 
-  function addRelationshipButtons() {
+  function syncRelationshipButtons() {
     const host = $('arfRelationship');
-    if (!host || host.dataset.tomoExpanded === 'true') return;
-    host.dataset.tomoExpanded = 'true';
-    for (const [tag, label] of RELATIONSHIP) host.append(makeTagButton(tag, label));
+    if (!host) return;
+    for (const [tag, label] of RELATIONSHIP) {
+      if (!host.querySelector(`[data-tomo-extra-tag="${CSS.escape(tag)}"]`)) host.append(makeTagButton(tag, label));
+    }
+    renderStates();
   }
 
   function syncGenreAvoidButtons() {
@@ -121,11 +123,20 @@
     renderStates();
   }
 
+  function clearExtraState() {
+    state.includeTags.clear();
+    state.excludeTags.clear();
+    state.excludeGenres.clear();
+    ['arfFromYear','arfToYear','arfMaxScore','arfMaxPopularity'].forEach(id => { if ($(id)) $(id).value = ''; });
+    if ($('arfLicensedOnly')) $('arfLicensedOnly').value = '';
+    renderStates();
+  }
+
   function installSections() {
     const base = document.querySelector('.advanced-randomizer-filters');
     if (!base || $('tomoExpandedFilters')) return false;
 
-    addRelationshipButtons();
+    syncRelationshipButtons();
 
     const formatSection = $('arfFormats')?.closest('.arf-section');
     const metrics = [...base.querySelectorAll('details.arf-section')].find(d => /Episodes, duration/i.test(d.querySelector('summary')?.textContent || ''));
@@ -195,8 +206,20 @@
       cycleTag(tag.dataset.tomoExtraTag);
     });
 
+    const relationship = $('arfRelationship');
+    if (relationship) new MutationObserver(syncRelationshipButtons).observe(relationship, { childList: true });
     const sourceGenres = $('arfGenres');
     if (sourceGenres) new MutationObserver(syncGenreAvoidButtons).observe(sourceGenres, { childList: true });
+
+    $('arfReset')?.addEventListener('click', () => {
+      clearExtraState();
+      setTimeout(() => {
+        syncRelationshipButtons();
+        syncGenreAvoidButtons();
+      }, 0);
+    }, true);
+
+    syncRelationshipButtons();
     syncGenreAvoidButtons();
     renderStates();
     return true;
@@ -232,13 +255,12 @@
       ...api,
       getOptions: wrapped,
       reset: () => {
-        state.includeTags.clear();
-        state.excludeTags.clear();
-        state.excludeGenres.clear();
-        ['arfFromYear','arfToYear','arfMaxScore','arfMaxPopularity'].forEach(id => { if ($(id)) $(id).value = ''; });
-        if ($('arfLicensedOnly')) $('arfLicensedOnly').value = '';
+        clearExtraState();
         api.reset?.();
-        renderStates();
+        setTimeout(() => {
+          syncRelationshipButtons();
+          syncGenreAvoidButtons();
+        }, 0);
       }
     });
   }
