@@ -7,6 +7,7 @@
   const state = {
     includeTags: new Set(),
     excludeTags: new Set(),
+    includeGenres: new Set(),
     excludeGenres: new Set()
   };
 
@@ -29,23 +30,22 @@
   ];
 
   const THEMES = [
-    ['School', 'School'],
-    ['Work', 'Workplace'],
-    ['Isekai', 'Isekai'],
-    ['Iyashikei', 'Iyashikei'],
-    ['Coming of Age', 'Coming of Age'],
-    ['Family Life', 'Family Life'],
-    ['Found Family', 'Found Family'],
-    ['Urban', 'Urban'],
-    ['Rural', 'Rural'],
-    ['Historical', 'Historical'],
-    ['Time Skip', 'Time Skip'],
-    ['Revenge', 'Revenge']
+    ['School', 'School'], ['Work', 'Workplace'], ['Isekai', 'Isekai'],
+    ['Iyashikei', 'Iyashikei'], ['Coming of Age', 'Coming of Age'],
+    ['Family Life', 'Family Life'], ['Found Family', 'Found Family'],
+    ['Urban', 'Urban'], ['Rural', 'Rural'], ['Historical', 'Historical'],
+    ['Time Skip', 'Time Skip'], ['Revenge', 'Revenge']
   ];
 
   function tagState(tag) {
     if (state.includeTags.has(tag)) return 'include';
     if (state.excludeTags.has(tag)) return 'exclude';
+    return 'none';
+  }
+
+  function genreState(genre) {
+    if (state.includeGenres.has(genre)) return 'include';
+    if (state.excludeGenres.has(genre)) return 'exclude';
     return 'none';
   }
 
@@ -62,7 +62,14 @@
   }
 
   function cycleGenre(genre) {
-    state.excludeGenres.has(genre) ? state.excludeGenres.delete(genre) : state.excludeGenres.add(genre);
+    if (state.includeGenres.has(genre)) {
+      state.includeGenres.delete(genre);
+      state.excludeGenres.add(genre);
+    } else if (state.excludeGenres.has(genre)) {
+      state.excludeGenres.delete(genre);
+    } else {
+      state.includeGenres.add(genre);
+    }
     renderStates();
   }
 
@@ -80,17 +87,23 @@
     document.querySelectorAll('[data-tomo-extra-tag]').forEach(b => {
       b.dataset.state = tagState(b.dataset.tomoExtraTag);
     });
-    document.querySelectorAll('[data-tomo-exclude-genre]').forEach(b => {
-      const on = state.excludeGenres.has(b.dataset.tomoExcludeGenre);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.dataset.state = on ? 'exclude' : 'none';
+
+    $('arfGenres')?.querySelectorAll('[data-group="genre"]').forEach(b => {
+      const genre = b.dataset.value || b.textContent.trim();
+      const mode = genreState(genre);
+      b.classList.add('arf-tag');
+      b.dataset.state = mode;
+      b.setAttribute('aria-pressed', mode === 'include' ? 'true' : 'false');
+      b.setAttribute('aria-label', `${genre}: ${mode === 'include' ? 'included' : mode === 'exclude' ? 'excluded' : 'not selected'}`);
     });
+
     const note = $('arfExpandedSummary');
     if (note) {
       const bits = [];
+      if (state.includeGenres.size) bits.push(`${state.includeGenres.size} genre${state.includeGenres.size === 1 ? '' : 's'} included`);
+      if (state.excludeGenres.size) bits.push(`${state.excludeGenres.size} genre${state.excludeGenres.size === 1 ? '' : 's'} excluded`);
       if (state.includeTags.size) bits.push(`${state.includeTags.size} quick tag${state.includeTags.size === 1 ? '' : 's'} included`);
       if (state.excludeTags.size) bits.push(`${state.excludeTags.size} quick tag${state.excludeTags.size === 1 ? '' : 's'} excluded`);
-      if (state.excludeGenres.size) bits.push(`${state.excludeGenres.size} genre${state.excludeGenres.size === 1 ? '' : 's'} avoided`);
       note.textContent = bits.join(' · ') || 'No extra quick filters selected.';
     }
   }
@@ -104,28 +117,32 @@
     renderStates();
   }
 
-  function syncGenreAvoidButtons() {
-    const source = $('arfGenres');
-    const target = $('arfAvoidGenres');
-    if (!source || !target) return;
-    const labels = [...source.querySelectorAll('[data-group="genre"]')].map(b => b.dataset.value || b.textContent.trim()).filter(Boolean);
-    if (!labels.length) return;
-    const current = [...target.querySelectorAll('[data-tomo-exclude-genre]')].map(b => b.dataset.tomoExcludeGenre);
-    if (labels.length === current.length && labels.every((x, i) => x === current[i])) return;
-    target.replaceChildren(...labels.map(genre => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'arf-chip arf-tag';
-      b.dataset.tomoExcludeGenre = genre;
-      b.textContent = genre;
-      return b;
-    }));
+  function bindGenreTriState() {
+    const host = $('arfGenres');
+    if (!host || host.dataset.tomoTriState === 'true') return;
+    host.dataset.tomoTriState = 'true';
+
+    host.querySelectorAll('[data-group="genre"][aria-pressed="true"]').forEach(b => {
+      state.includeGenres.add(b.dataset.value || b.textContent.trim());
+    });
+
+    host.addEventListener('click', event => {
+      const chip = event.target.closest('[data-group="genre"]');
+      if (!chip) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      cycleGenre(chip.dataset.value || chip.textContent.trim());
+    }, true);
+
+    new MutationObserver(() => requestAnimationFrame(renderStates))
+      .observe(host, { childList: true, subtree: false });
     renderStates();
   }
 
   function clearExtraState() {
     state.includeTags.clear();
     state.excludeTags.clear();
+    state.includeGenres.clear();
     state.excludeGenres.clear();
     ['arfFromYear','arfToYear','arfMaxScore','arfMaxPopularity'].forEach(id => { if ($(id)) $(id).value = ''; });
     if ($('arfLicensedOnly')) $('arfLicensedOnly').value = '';
@@ -137,9 +154,20 @@
     if (!base || $('tomoExpandedFilters')) return false;
 
     syncRelationshipButtons();
+    bindGenreTriState();
+
+    const genreSection = $('arfGenres')?.closest('.arf-section');
+    if (genreSection && !genreSection.querySelector('[data-tomo-genre-help]')) {
+      const p = document.createElement('p');
+      p.className = 'arf-hint';
+      p.dataset.tomoGenreHelp = 'true';
+      p.textContent = 'Tap once to include, twice to exclude, a third time to clear.';
+      $('arfGenres').after(p);
+    }
 
     const formatSection = $('arfFormats')?.closest('.arf-section');
-    const metrics = [...base.querySelectorAll('details.arf-section')].find(d => /Episodes, duration/i.test(d.querySelector('summary')?.textContent || ''));
+    const metrics = [...base.querySelectorAll('details.arf-section')]
+      .find(d => /Episodes, duration/i.test(d.querySelector('summary')?.textContent || ''));
 
     const expanded = document.createElement('div');
     expanded.id = 'tomoExpandedFilters';
@@ -151,13 +179,10 @@
         <div id="arfCastQuick" class="arf-chips"></div>
         <div class="arf-label arf-space">THEMES & SETTING</div>
         <div id="arfThemeQuick" class="arf-chips"></div>
-        <p class="arf-hint">Quick AniList tag shortcuts. Tap once to include, twice to exclude, a third time to clear.</p>
+        <p class="arf-hint">Tap once to include, twice to exclude, a third time to clear.</p>
       </details>
       <details class="arf-section">
-        <summary>Avoid genres & narrow the release window</summary>
-        <div class="arf-label arf-space">AVOID GENRES</div>
-        <div id="arfAvoidGenres" class="arf-chips"></div>
-        <p class="arf-hint">These are excluded from the roll.</p>
+        <summary>Narrow the release window</summary>
         <div class="arf-grid">
           <label class="arf-field">From year<input id="arfFromYear" type="number" min="1940" max="2100" inputmode="numeric" placeholder="Any"></label>
           <label class="arf-field">Through year<input id="arfToYear" type="number" min="1940" max="2100" inputmode="numeric" placeholder="Any"></label>
@@ -186,16 +211,9 @@
 
     expanded.addEventListener('click', event => {
       const tag = event.target.closest('[data-tomo-extra-tag]');
-      if (tag) {
-        event.preventDefault();
-        cycleTag(tag.dataset.tomoExtraTag);
-        return;
-      }
-      const genre = event.target.closest('[data-tomo-exclude-genre]');
-      if (genre) {
-        event.preventDefault();
-        cycleGenre(genre.dataset.tomoExcludeGenre);
-      }
+      if (!tag) return;
+      event.preventDefault();
+      cycleTag(tag.dataset.tomoExtraTag);
     });
 
     $('arfRelationship')?.addEventListener('click', event => {
@@ -208,19 +226,16 @@
 
     const relationship = $('arfRelationship');
     if (relationship) new MutationObserver(syncRelationshipButtons).observe(relationship, { childList: true });
-    const sourceGenres = $('arfGenres');
-    if (sourceGenres) new MutationObserver(syncGenreAvoidButtons).observe(sourceGenres, { childList: true });
 
     $('arfReset')?.addEventListener('click', () => {
       clearExtraState();
       setTimeout(() => {
         syncRelationshipButtons();
-        syncGenreAvoidButtons();
+        bindGenreTriState();
+        renderStates();
       }, 0);
     }, true);
 
-    syncRelationshipButtons();
-    syncGenreAvoidButtons();
     renderStates();
     return true;
   }
@@ -240,6 +255,7 @@
       const exclude = [...new Set([...(base.exclude || []), ...state.excludeTags])].filter(tag => !include.includes(tag));
       return {
         ...base,
+        genres: [...state.includeGenres],
         include,
         exclude,
         excludeGenres: [...state.excludeGenres],
@@ -251,6 +267,7 @@
       };
     };
     wrapped.__tomoExpanded = true;
+
     window.TomoAdvancedRandomizer = Object.freeze({
       ...api,
       getOptions: wrapped,
@@ -259,7 +276,8 @@
         api.reset?.();
         setTimeout(() => {
           syncRelationshipButtons();
-          syncGenreAvoidButtons();
+          bindGenreTriState();
+          renderStates();
         }, 0);
       }
     });
