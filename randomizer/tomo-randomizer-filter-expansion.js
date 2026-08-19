@@ -91,6 +91,7 @@
     $('arfGenres')?.querySelectorAll('[data-group="genre"]').forEach(b => {
       const genre = b.dataset.value || b.textContent.trim();
       const mode = genreState(genre);
+      b.classList.add('arf-tag');
       b.dataset.state = mode;
       b.setAttribute('aria-pressed', mode === 'include' ? 'true' : 'false');
       b.setAttribute('aria-label', `${genre}: ${mode === 'include' ? 'included' : mode === 'exclude' ? 'excluded' : 'not selected'}`);
