@@ -7,18 +7,24 @@
   function hasActiveFilters(options = {}) {
     return options.scope !== 'any'
       || Boolean(options.genres?.length)
+      || Boolean(options.excludeGenres?.length)
       || Boolean(options.formats?.length)
       || Boolean(options.release?.length)
       || Boolean(options.countries?.length)
       || Boolean(options.sources?.length)
       || Boolean(options.season)
       || Boolean(options.year)
+      || Boolean(options.fromYear)
+      || Boolean(options.toYear)
       || Boolean(options.minEp)
       || Boolean(options.maxEp)
       || Boolean(options.minDur)
       || Boolean(options.maxDur)
       || Boolean(options.score)
+      || Boolean(options.maxScore)
       || Boolean(options.popularity)
+      || Boolean(options.maxPopularity)
+      || Boolean(options.licensedOnly)
       || Boolean(options.include?.length)
       || Boolean(options.exclude?.length);
   }
@@ -39,9 +45,9 @@
   }
 
   async function install() {
-    for (let i = 0; i < 80; i += 1) {
+    for (let i = 0; i < 100; i += 1) {
       if (window.TomoAdvancedRandomizer?.getOptions && $('quickRollBtn') && $('smartRollBtn')) break;
-      await sleep(100);
+      await sleep(80);
     }
 
     const quick = $('quickRollBtn');
