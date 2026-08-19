@@ -1,27 +1,302 @@
 import { anilistClient } from '../core/anilist-client.js?v=1.0.0';
 import { store } from '../core/storage.js?v=1.0.0';
 
-const $=id=>document.getElementById(id);
-const titleOf=m=>m?.title?.english||m?.title?.userPreferred||m?.title?.romaji||m?.title?.native||'Untitled';
-const MODES=[['surprise','🎲','Surprise Me','Anything goes'],['backlog','📚','Backlog Roulette','From Planning'],['continue','▶️','Continue Something','From Watching'],['rewatch','↻','Rewatch Roulette','From Completed'],['rescue','🛟','Dropped Rescue','Give one another chance'],['movie','🎬','Movie Night','Movies only'],['short','🍬','Short & Sweet','12 episodes or fewer'],['hidden','💎','Hidden Gem','Lower popularity, solid score'],['throwback','📼','Throwback','Before 2000'],['current-season','🌸','Season Roulette','Current season only']];
-const MEDIA_FIELDS=`id title{romaji english native userPreferred} description(asHtml:true) coverImage{extraLarge large} format episodes duration averageScore popularity season seasonYear status siteUrl genres`;
+const $ = id => document.getElementById(id);
+const titleOf = m => m?.title?.english || m?.title?.userPreferred || m?.title?.romaji || m?.title?.native || 'Untitled';
+const MODES = [
+  ['surprise','🎲','Surprise Me','Anything goes'],
+  ['backlog','📚','Backlog Roulette','From Planning'],
+  ['continue','▶️','Continue Something','From Watching'],
+  ['rewatch','↻','Rewatch Roulette','From Completed'],
+  ['rescue','🛟','Dropped Rescue','Give one another chance'],
+  ['movie','🎬','Movie Night','Movies only'],
+  ['short','🍬','Short & Sweet','12 episodes or fewer'],
+  ['hidden','💎','Hidden Gem','Lower popularity, solid score'],
+  ['throwback','📼','Throwback','Before 2000'],
+  ['current-season','🌸','Season Roulette','Current season only']
+];
+const MEDIA_FIELDS = `id title{romaji english native userPreferred} description(asHtml:true) coverImage{extraLarge large} format episodes duration averageScore popularity season seasonYear status siteUrl genres`;
+const pools = new Map();
+const prefetchTimers = new Map();
 
-function cleanText(html){if(!html)return'No synopsis available yet.';const doc=new DOMParser().parseFromString(String(html),'text/html');return doc.body?.textContent?.trim()||'No synopsis available yet.'}
-function historyIds(){return store.getHistory().slice(0,20).map(x=>Number(x.id)).filter(Boolean)}
-function notTonightIds(){return store.getNotTonight().filter(x=>Date.now()-Number(x.time||0)<43200000).map(x=>Number(x.id)).filter(Boolean)}
-function toast(message){const n=$('toast');if(!n)return;n.textContent=message;n.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.hidden=true,3600)}
-function remember(media,mode){if(!media?.id)return;store.setHistory([{id:media.id,title:titleOf(media),cover:media?.coverImage?.large||'',mode,time:Date.now()},...store.getHistory().filter(x=>Number(x.id)!==Number(media.id))].slice(0,40));window.dispatchEvent(new CustomEvent('tomo:roll-history-updated'))}
-function ensureResultActions(){const a=$('resultSection')?.querySelector('.result-actions');if(!a||a.querySelector('[data-tomo-feedback]'))return;for(const [kind,label] of [['maybe','♡ Maybe later'],['skip','Not tonight']]){const b=document.createElement('button');b.type='button';b.className='secondary-btn';b.dataset.tomoFeedback=kind;b.textContent=label;a.append(b)}}
-function showResult(media,mode){const result=$('resultSection');if(!result||!media)return;const cover=$('resultCover'),url=media?.coverImage?.extraLarge||media?.coverImage?.large||'';if(cover){if(url)cover.src=url;cover.alt=`${titleOf(media)} cover`}$('resultTitle').textContent=titleOf(media);$('resultDescription').textContent=cleanText(media.description);$('resultMeta').textContent=[media.format,media.episodes&&`${media.episodes} eps`,media.duration&&`${media.duration} min`,media.averageScore&&`${media.averageScore}%`,media.seasonYear].filter(Boolean).join(' · ')||'Anime';$('resultTags').replaceChildren(...(media.genres||[]).slice(0,6).map(name=>{const s=document.createElement('span');s.textContent=name;return s}));$('anilistLink').href=media.siteUrl||`https://anilist.co/anime/${media.id}`;Object.assign(result.dataset,{tomoMode:mode,tomoRollSource:'mode',mediaId:String(media.id||''),mediaTitle:titleOf(media),mediaCover:media?.coverImage?.large||''});result.hidden=false;remember(media,mode);ensureResultActions();window.dispatchEvent(new CustomEvent('tomo:roll-result',{detail:{source:'mode',mode,media}}));result.scrollIntoView({behavior:'smooth',block:'center'})}
-function currentSeason(){const d=new Date(),m=d.getMonth()+1;return[m<=3?'WINTER':m<=6?'SPRING':m<=9?'SUMMER':'FALL',d.getFullYear()]}
+function cleanText(html) {
+  if (!html) return 'No synopsis available yet.';
+  const doc = new DOMParser().parseFromString(String(html), 'text/html');
+  return doc.body?.textContent?.trim() || 'No synopsis available yet.';
+}
+function historyIds() { return store.getHistory().slice(0,20).map(x => Number(x.id)).filter(Boolean); }
+function notTonightIds() { return store.getNotTonight().filter(x => Date.now() - Number(x.time || 0) < 43200000).map(x => Number(x.id)).filter(Boolean); }
+function toast(message) {
+  const n = $('toast');
+  if (!n) return;
+  n.textContent = message;
+  n.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => n.hidden = true, 3600);
+}
+function remember(media, mode) {
+  if (!media?.id) return;
+  store.setHistory([{ id:media.id, title:titleOf(media), cover:media?.coverImage?.large || '', mode, time:Date.now() }, ...store.getHistory().filter(x => Number(x.id) !== Number(media.id))].slice(0,40));
+  window.dispatchEvent(new CustomEvent('tomo:roll-history-updated'));
+}
+function ensureResultActions() {
+  const a = $('resultSection')?.querySelector('.result-actions');
+  if (!a || a.querySelector('[data-tomo-feedback]')) return;
+  for (const [kind,label] of [['maybe','♡ Maybe later'],['skip','Not tonight']]) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'secondary-btn';
+    b.dataset.tomoFeedback = kind;
+    b.textContent = label;
+    a.append(b);
+  }
+}
+function showResult(media, mode) {
+  const result = $('resultSection');
+  if (!result || !media) return;
+  const cover = $('resultCover');
+  const url = media?.coverImage?.extraLarge || media?.coverImage?.large || '';
+  if (cover) {
+    if (url) cover.src = url;
+    cover.alt = `${titleOf(media)} cover`;
+  }
+  $('resultTitle').textContent = titleOf(media);
+  $('resultDescription').textContent = cleanText(media.description);
+  $('resultMeta').textContent = [media.format, media.episodes && `${media.episodes} eps`, media.duration && `${media.duration} min`, media.averageScore && `${media.averageScore}%`, media.seasonYear].filter(Boolean).join(' · ') || 'Anime';
+  $('resultTags').replaceChildren(...(media.genres || []).slice(0,6).map(name => { const s = document.createElement('span'); s.textContent = name; return s; }));
+  $('anilistLink').href = media.siteUrl || `https://anilist.co/anime/${media.id}`;
+  Object.assign(result.dataset, { tomoMode:mode, tomoRollSource:'mode', mediaId:String(media.id || ''), mediaTitle:titleOf(media), mediaCover:media?.coverImage?.large || '' });
+  result.hidden = false;
+  remember(media, mode);
+  ensureResultActions();
+  window.dispatchEvent(new CustomEvent('tomo:roll-result', { detail:{ source:'mode', mode, media } }));
+  result.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+function currentSeason() {
+  const d = new Date(), m = d.getMonth() + 1;
+  return [m <= 3 ? 'WINTER' : m <= 6 ? 'SPRING' : m <= 9 ? 'SUMMER' : 'FALL', d.getFullYear()];
+}
+function shuffle(items) {
+  const out = [...items].filter(Boolean);
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+function putPool(mode, items) {
+  const seen = new Set();
+  const queue = shuffle(items).filter(media => {
+    const id = Number(media?.id || 0);
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+  pools.set(mode, queue);
+}
+function addPool(mode, items) {
+  const queue = pools.get(mode) || [];
+  const ids = new Set(queue.map(x => Number(x?.id || 0)));
+  const extra = shuffle(items).filter(media => {
+    const id = Number(media?.id || 0);
+    if (!id || ids.has(id)) return false;
+    ids.add(id);
+    return true;
+  });
+  queue.push(...extra);
+  pools.set(mode, queue);
+}
+function takePool(mode) {
+  const queue = pools.get(mode) || [];
+  const media = queue.shift() || null;
+  pools.set(mode, queue);
+  return media;
+}
 
-async function detailedList(status){if(!window.TomoAniList?.isConnected?.())throw new Error('Connect AniList first for this mode.');const viewer=window.TomoAniList.getViewer?.();if(!viewer?.id)throw new Error('Your AniList account is still loading.');const data=await anilistClient.authenticated(`query($userId:Int!,$status:MediaListStatus!){MediaListCollection(userId:$userId,type:ANIME,status:$status){lists{entries{mediaId status progress score repeat media{${MEDIA_FIELDS}}}}}}`,{userId:Number(viewer.id),status},{ttl:0,force:true});return(data?.MediaListCollection?.lists||[]).flatMap(x=>x?.entries||[]).filter(entry=>entry?.status===status&&entry?.media)}
-async function pickFromList(status,mode){const entries=await detailedList(status);const blocked=new Set([...historyIds(),...notTonightIds()]);let pool=entries.filter(e=>!blocked.has(Number(e.media.id||e.mediaId)));if(!pool.length)pool=entries;if(!pool.length)throw new Error(`No anime are available in ${status.toLowerCase()} right now.`);const pick=pool[Math.floor(Math.random()*pool.length)];if(pick?.status!==status||!pick?.media)throw new Error('Tomo could not verify this AniList status. Please try again.');showResult(pick.media,mode)}
+async function detailedList(status) {
+  if (!window.TomoAniList?.isConnected?.()) throw new Error('Connect AniList first for this mode.');
+  const viewer = window.TomoAniList.getViewer?.();
+  if (!viewer?.id) throw new Error('Your AniList account is still loading.');
+  const data = await anilistClient.authenticated(`query($userId:Int!,$status:MediaListStatus!){MediaListCollection(userId:$userId,type:ANIME,status:$status){lists{entries{mediaId status progress score repeat media{${MEDIA_FIELDS}}}}}}`, { userId:Number(viewer.id), status }, { ttl:0, force:true });
+  return (data?.MediaListCollection?.lists || []).flatMap(x => x?.entries || []).filter(entry => entry?.status === status && entry?.media);
+}
+async function fillListPool(status, mode) {
+  const entries = await detailedList(status);
+  const blocked = new Set([...historyIds(), ...notTonightIds()]);
+  let media = entries.filter(e => !blocked.has(Number(e.media.id || e.mediaId))).map(e => e.media);
+  if (!media.length) media = entries.map(e => e.media);
+  if (!media.length) throw new Error(`No anime are available in ${status.toLowerCase()} right now.`);
+  putPool(mode, media);
+}
 
-async function publicPick(mode,extraArgs=[],vars={},avoidRecent=true){const blocked=avoidRecent?[...new Set([...historyIds(),...notTonightIds()])].slice(0,40):[];const defs=['$page:Int'],args=['type:ANIME','isAdult:false'],variables={page:1,...vars};if(blocked.length){defs.push('$blocked:[Int]');args.push('id_not_in:$blocked');variables.blocked=blocked}for(const p of extraArgs){defs.push(p.def);args.push(p.arg)}args.push('sort:[POPULARITY_DESC,SCORE_DESC]');const query=`query TomoMode(${defs.join(',')}){Page(page:$page,perPage:50){pageInfo{lastPage}media(${args.join(',')}){${MEDIA_FIELDS}}}}`;const first=await anilistClient.public(query,variables,{ttl:0,force:true});let pool=first?.Page?.media||[];if(!pool.length&&blocked.length)return publicPick(mode,extraArgs,vars,false);if(!pool.length)throw new Error('No anime matched this mode right now.');const last=Math.min(40,Math.max(1,Number(first?.Page?.pageInfo?.lastPage||1))),page=Math.floor(Math.random()*last)+1;if(page!==1){const next=(await anilistClient.public(query,{...variables,page},{ttl:0,force:true}))?.Page?.media||[];if(next.length)pool=next}const pick=pool[Math.floor(Math.random()*pool.length)];if(!pick)throw new Error('Tomo could not choose a result from AniList. Please try again.');showResult(pick,mode)}
+function publicSpec(mode) {
+  if (mode === 'movie') return { args:[{def:'$format:MediaFormat',arg:'format:$format'}], vars:{format:'MOVIE'} };
+  if (mode === 'short') return { args:[{def:'$episodes:Int',arg:'episodes_lesser:$episodes'}], vars:{episodes:13} };
+  if (mode === 'hidden') return { args:[{def:'$pop:Int',arg:'popularity_lesser:$pop'},{def:'$score:Int',arg:'averageScore_greater:$score'}], vars:{pop:15000,score:68} };
+  if (mode === 'throwback') return { args:[{def:'$date:FuzzyDateInt',arg:'startDate_lesser:$date'}], vars:{date:20000101} };
+  if (mode === 'current-season') {
+    const [season,year] = currentSeason();
+    return { args:[{def:'$season:MediaSeason',arg:'season:$season'},{def:'$year:Int',arg:'seasonYear:$year'}], vars:{season,year} };
+  }
+  return { args:[], vars:{} };
+}
+function buildPublicQuery(mode, avoidRecent = true) {
+  const { args:extraArgs, vars } = publicSpec(mode);
+  const blocked = avoidRecent ? [...new Set([...historyIds(), ...notTonightIds()])].slice(0,40) : [];
+  const defs = ['$page:Int'];
+  const args = ['type:ANIME','isAdult:false'];
+  const variables = { page:1, ...vars };
+  if (blocked.length) {
+    defs.push('$blocked:[Int]');
+    args.push('id_not_in:$blocked');
+    variables.blocked = blocked;
+  }
+  for (const p of extraArgs) { defs.push(p.def); args.push(p.arg); }
+  args.push('sort:[POPULARITY_DESC,SCORE_DESC]');
+  return {
+    query:`query TomoModeFast(${defs.join(',')}){Page(page:$page,perPage:50){pageInfo{lastPage}media(${args.join(',')}){${MEDIA_FIELDS}}}}`,
+    variables,
+    hadBlocked:Boolean(blocked.length)
+  };
+}
+function schedulePublicPrefetch(mode, query, variables, lastPage) {
+  clearTimeout(prefetchTimers.get(mode));
+  const last = Math.min(80, Math.max(1, Number(lastPage || 1)));
+  if (last <= 1) return;
+  const timer = setTimeout(async () => {
+    try {
+      const page = Math.floor(Math.random() * last) + 1;
+      if (page === 1) return;
+      const next = await anilistClient.public(query, { ...variables, page }, { ttl:0, force:true });
+      addPool(mode, next?.Page?.media || []);
+    } catch {
+      // Background variety fetch is optional; cached rerolls still work.
+    }
+  }, 2300);
+  prefetchTimers.set(mode, timer);
+}
+async function fillPublicPool(mode, avoidRecent = true) {
+  const spec = buildPublicQuery(mode, avoidRecent);
+  const first = await anilistClient.public(spec.query, spec.variables, { ttl:0, force:true });
+  let media = first?.Page?.media || [];
+  if (!media.length && spec.hadBlocked) return fillPublicPool(mode, false);
+  if (!media.length) throw new Error('No anime matched this mode right now.');
+  putPool(mode, media);
+  schedulePublicPrefetch(mode, spec.query, spec.variables, first?.Page?.pageInfo?.lastPage || 1);
+}
 
-async function runMode(mode,button){if(button?.disabled)return;const old=button?.innerHTML;if(button){button.disabled=true;button.innerHTML='<strong>Picking…</strong><small>Just a moment</small>'}try{if(mode==='surprise')return await publicPick(mode);if(mode==='backlog')return await pickFromList('PLANNING',mode);if(mode==='continue')return await pickFromList('CURRENT',mode);if(mode==='rewatch')return await pickFromList('COMPLETED',mode);if(mode==='rescue')return await pickFromList('DROPPED',mode);if(mode==='movie')return await publicPick(mode,[{def:'$format:MediaFormat',arg:'format:$format'}],{format:'MOVIE'});if(mode==='short')return await publicPick(mode,[{def:'$episodes:Int',arg:'episodes_lesser:$episodes'}],{episodes:13});if(mode==='hidden')return await publicPick(mode,[{def:'$pop:Int',arg:'popularity_lesser:$pop'},{def:'$score:Int',arg:'averageScore_greater:$score'}],{pop:15000,score:68});if(mode==='throwback')return await publicPick(mode,[{def:'$date:FuzzyDateInt',arg:'startDate_lesser:$date'}],{date:20000101});if(mode==='current-season'){const[season,year]=currentSeason();return await publicPick(mode,[{def:'$season:MediaSeason',arg:'season:$season'},{def:'$year:Int',arg:'seasonYear:$year'}],{season,year})}}catch(error){toast(error?.message||'Tomo could not pick an anime right now.')}finally{if(button){button.disabled=false;button.innerHTML=old}}}
+async function runMode(mode, button) {
+  if (button?.disabled) return;
 
-function renderHistory(){const host=$('tomoRollHistory');if(!host)return;const items=store.getHistory().slice(0,8);host.hidden=!items.length;const grid=host.querySelector('.tomo-history-grid');if(!grid)return;grid.replaceChildren(...items.map(item=>{const a=document.createElement('a');a.href=`https://anilist.co/anime/${item.id}`;a.target='_blank';a.rel='noopener noreferrer';a.className='tomo-history-card';if(item.cover){const img=document.createElement('img');img.src=item.cover;img.alt='';img.loading='lazy';a.append(img)}const span=document.createElement('span');span.textContent=item.title;a.append(span);return a}))}
+  const cached = takePool(mode);
+  if (cached) {
+    showResult(cached, mode);
+    return;
+  }
 
-export function initRandomizerModes(){const screen=$('screen-randomize'),hero=screen?.querySelector('.hero-card');if(!screen||!hero||$('tomoModeHub'))return;const hub=document.createElement('section');hub.id='tomoModeHub';hub.className='tomo-v1-card tomo-mode-hub';hub.innerHTML=`<div class="tomo-v1-heading"><div><span class="eyebrow">PICK A MODE</span><h2>One randomizer, lots of ways to choose.</h2><p>Quick Roll is now Surprise Me — the other modes give the roll a purpose.</p></div></div><div class="tomo-mode-grid">${MODES.map(([id,icon,title,desc])=>`<button type="button" class="tomo-mode-card" data-tomo-mode="${id}"><span>${icon}</span><strong>${title}</strong><small>${desc}</small></button>`).join('')}</div>`;hero.insertAdjacentElement('afterend',hub);const history=document.createElement('section');history.id='tomoRollHistory';history.className='tomo-v1-card tomo-history';history.hidden=true;history.innerHTML='<div class="tomo-v1-heading"><div><span class="eyebrow">RECENT ROLLS</span><h2>Roll history</h2></div><button class="ghost-btn" type="button" data-clear-history>Clear</button></div><div class="tomo-history-grid"></div>';screen.append(history);hub.addEventListener('click',e=>{const b=e.target.closest('[data-tomo-mode]');if(b)runMode(b.dataset.tomoMode,b)});$('resultSection')?.addEventListener('click',e=>{const b=e.target.closest('[data-tomo-feedback]');if(!b)return;const id=Number($('resultSection').dataset.mediaId||0);if(!id)return;const item={id,title:$('resultSection').dataset.mediaTitle||$('resultTitle')?.textContent||'Anime',cover:$('resultSection').dataset.mediaCover||'',time:Date.now()};if(b.dataset.tomoFeedback==='maybe'){store.setMaybeLater([item,...store.getMaybeLater().filter(x=>Number(x.id)!==id)].slice(0,100));toast('Saved to Maybe Later on this device.')}else{store.setNotTonight([item,...store.getNotTonight().filter(x=>Number(x.id)!==id)].slice(0,100));toast('Skipped for tonight. Tomo will avoid it for 12 hours.')}});history.addEventListener('click',e=>{if(e.target.closest('[data-clear-history]')){store.setHistory([]);renderHistory()}});window.addEventListener('tomo:roll-history-updated',renderHistory);window.addEventListener('tomo:roll-result',event=>{if(event?.detail?.source!=='filtered'||!event?.detail?.media)return;remember(event.detail.media,'filtered');ensureResultActions();renderHistory()});renderHistory();const quick=$('quickRollBtn');if(quick)quick.textContent='🎲 Surprise Me'}
+  const old = button?.innerHTML;
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<strong>Picking…</strong><small>Just a moment</small>';
+  }
+  try {
+    if (mode === 'backlog') await fillListPool('PLANNING', mode);
+    else if (mode === 'continue') await fillListPool('CURRENT', mode);
+    else if (mode === 'rewatch') await fillListPool('COMPLETED', mode);
+    else if (mode === 'rescue') await fillListPool('DROPPED', mode);
+    else await fillPublicPool(mode);
+
+    const pick = takePool(mode);
+    if (!pick) throw new Error('Tomo could not choose a result from this mode. Please try again.');
+    showResult(pick, mode);
+  } catch (error) {
+    toast(error?.message || 'Tomo could not pick an anime right now.');
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = old;
+    }
+  }
+}
+
+function renderHistory() {
+  const host = $('tomoRollHistory');
+  if (!host) return;
+  const items = store.getHistory().slice(0,8);
+  host.hidden = !items.length;
+  const grid = host.querySelector('.tomo-history-grid');
+  if (!grid) return;
+  grid.replaceChildren(...items.map(item => {
+    const a = document.createElement('a');
+    a.href = `https://anilist.co/anime/${item.id}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'tomo-history-card';
+    if (item.cover) {
+      const img = document.createElement('img');
+      img.src = item.cover;
+      img.alt = '';
+      img.loading = 'lazy';
+      a.append(img);
+    }
+    const span = document.createElement('span');
+    span.textContent = item.title;
+    a.append(span);
+    return a;
+  }));
+}
+
+export function initRandomizerModes() {
+  const screen = $('screen-randomize'), hero = screen?.querySelector('.hero-card');
+  if (!screen || !hero || $('tomoModeHub')) return;
+
+  const hub = document.createElement('section');
+  hub.id = 'tomoModeHub';
+  hub.className = 'tomo-v1-card tomo-mode-hub';
+  hub.innerHTML = `<div class="tomo-v1-heading"><div><span class="eyebrow">PICK A MODE</span><h2>One randomizer, lots of ways to choose.</h2><p>Surprise Me is the fast general roll — the other modes give the roll a purpose.</p></div></div><div class="tomo-mode-grid">${MODES.map(([id,icon,title,desc]) => `<button type="button" class="tomo-mode-card" data-tomo-mode="${id}"><span>${icon}</span><strong>${title}</strong><small>${desc}</small></button>`).join('')}</div>`;
+  hero.insertAdjacentElement('afterend', hub);
+
+  const history = document.createElement('section');
+  history.id = 'tomoRollHistory';
+  history.className = 'tomo-v1-card tomo-history';
+  history.hidden = true;
+  history.innerHTML = '<div class="tomo-v1-heading"><div><span class="eyebrow">RECENT ROLLS</span><h2>Roll history</h2></div><button class="ghost-btn" type="button" data-clear-history>Clear</button></div><div class="tomo-history-grid"></div>';
+  screen.append(history);
+
+  hub.addEventListener('click', e => {
+    const b = e.target.closest('[data-tomo-mode]');
+    if (b) runMode(b.dataset.tomoMode, b);
+  });
+
+  $('resultSection')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-tomo-feedback]');
+    if (!b) return;
+    const id = Number($('resultSection').dataset.mediaId || 0);
+    if (!id) return;
+    const item = { id, title:$('resultSection').dataset.mediaTitle || $('resultTitle')?.textContent || 'Anime', cover:$('resultSection').dataset.mediaCover || '', time:Date.now() };
+    if (b.dataset.tomoFeedback === 'maybe') {
+      store.setMaybeLater([item, ...store.getMaybeLater().filter(x => Number(x.id) !== id)].slice(0,100));
+      toast('Saved to Maybe Later on this device.');
+    } else {
+      store.setNotTonight([item, ...store.getNotTonight().filter(x => Number(x.id) !== id)].slice(0,100));
+      toast('Skipped for tonight. Tomo will avoid it for 12 hours.');
+    }
+  });
+
+  history.addEventListener('click', e => {
+    if (e.target.closest('[data-clear-history]')) {
+      store.setHistory([]);
+      renderHistory();
+    }
+  });
+  window.addEventListener('tomo:roll-history-updated', renderHistory);
+  window.addEventListener('tomo:roll-result', event => {
+    if (event?.detail?.source !== 'filtered' || !event?.detail?.media) return;
+    remember(event.detail.media, 'filtered');
+    ensureResultActions();
+    renderHistory();
+  });
+  renderHistory();
+  const quick = $('quickRollBtn');
+  if (quick) quick.textContent = '🎲 Surprise Me';
+}
