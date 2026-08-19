@@ -158,7 +158,7 @@
       return data;
     };
     wrapped.__tomoAllTriState = true;
-    window.TomoAniList.request = wrapped;
+    window.TomoAniList = Object.freeze({ ...api, request: wrapped });
   }
 
   async function install() {
