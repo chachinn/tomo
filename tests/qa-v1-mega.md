@@ -9,9 +9,43 @@
 - [ ] Tune My Pick opens above the blurred backdrop on iPhone.
 - [ ] Tune My Pick remains stable while scrolling; X/backdrop close work.
 - [ ] Existing advanced filters, BL/GL/harem shortcuts, country/source filters remain present.
+- [ ] Straight / Heterosexual shortcut is present and filters by AniList's Heterosexual tag.
+- [ ] Existing relationship shortcuts still cycle include -> exclude -> clear.
 - [ ] Tune My Pick Randomize uses selected filters and shows visible errors.
 - [ ] Surprise Me with active Tune My Pick filters still respects the filter bridge.
 - [ ] Result card, reroll and AniList link still work.
+- [ ] Reset clears both original filters and the expanded filter state without removing shortcut buttons.
+
+## Expanded filter gates
+
+- [ ] Cast/protagonist quick tags appear and cycle include -> exclude -> clear.
+- [ ] Theme/setting quick tags appear and cycle include -> exclude -> clear.
+- [ ] Avoid Genres excludes selected genres from results.
+- [ ] From Year and Through Year constrain the release window.
+- [ ] Max Score works together with existing Min Score.
+- [ ] Max Popularity works together with existing Min Popularity.
+- [ ] Officially Licensed Only returns only media marked licensed by AniList.
+- [ ] Expanded filters work with Anywhere.
+- [ ] Expanded filters work with Not on my list.
+- [ ] Expanded filters work with My AniList status selections.
+- [ ] Multiple selected countries remain an OR choice rather than silently disabling country filtering.
+- [ ] Planning source never surfaces Completed/Current/Dropped entries after additional filters are applied.
+
+## Randomizer integrity / speed gates
+
+- [ ] First filtered roll loads normally and closes Tune My Pick on success.
+- [ ] Filtered Reroll changes the anime immediately from the in-memory candidate pool when candidates remain.
+- [ ] Filtered Reroll does not make a new network request for every tap while the candidate pool has entries.
+- [ ] Filtered Reroll never repeats the same cached candidate before the pool is exhausted.
+- [ ] Changing filters changes the candidate-pool key and cannot reuse stale candidates.
+- [ ] Backlog Roulette caches verified PLANNING candidates for instant rerolls.
+- [ ] Continue Something caches verified CURRENT candidates for instant rerolls.
+- [ ] Rewatch Roulette caches verified COMPLETED candidates for instant rerolls.
+- [ ] Dropped Rescue caches verified DROPPED candidates for instant rerolls.
+- [ ] Public modes cache the first returned page for instant rerolls.
+- [ ] Public-mode background variety fetch never blocks the visible result or reroll interaction.
+- [ ] Switching from filtered roll to a mode transfers Reroll ownership to that mode.
+- [ ] Switching from a mode to filtered roll transfers Reroll ownership to the filtered candidate pool.
 
 ## New feature gates
 
@@ -35,8 +69,10 @@
 
 ## Performance / resilience
 
-- [ ] New feature requests are serialized and spaced to avoid burst pressure.
-- [ ] Duplicate feature requests use in-memory cache where applicable.
+- [ ] New feature requests are serialized/spaced where appropriate to avoid burst pressure.
+- [ ] AniList candidate pages are reused in memory for rerolls instead of refetched on every tap.
+- [ ] My AniList Tune My Pick source uses one fresh status-filtered list fetch then filters locally for candidate reuse.
+- [ ] Background prefetch is opportunistic and failure does not break the current roll.
 - [ ] Images use lazy loading outside the primary result.
 - [ ] Horizontal shelves do not cause body horizontal overflow.
 - [ ] No long-running animation or sticky panel follows the user's finger.
