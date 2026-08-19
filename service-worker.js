@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.3.5-expanded-filters-fast-reroll';
+const CACHE_NAME = 'tomo-shell-v1.3.6-genre-tristate';
 const SHELL = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const SHELL = [
   './navigation/tomo-nav.js?v=1.2.1',
   './randomizer/tomo-randomizer-filters.css?v=1.2.4',
   './randomizer/tomo-randomizer-filters.js?v=1.2.6',
-  './randomizer/tomo-randomizer-filter-expansion.js?v=1.0.0',
+  './randomizer/tomo-randomizer-filter-expansion.js?v=1.0.1',
   './randomizer/tomo-randomizer-action-fix.js?v=1.0.4',
   './randomizer/tomo-quick-roll-filter-bridge.js?v=1.0.1',
   './randomizer/tomo-filter-result-transition.js?v=1.0.0',
@@ -58,7 +58,7 @@ self.addEventListener('fetch', event => {
       const text = await base.text();
       const loader = `\n;(() => {
         if (!document.querySelector('script[data-tomo-randomizer-filter-expansion]')) {
-          const e=document.createElement('script'); e.src='randomizer/tomo-randomizer-filter-expansion.js?v=1.0.0'; e.defer=true; e.dataset.tomoRandomizerFilterExpansion='true'; document.body.appendChild(e);
+          const e=document.createElement('script'); e.src='randomizer/tomo-randomizer-filter-expansion.js?v=1.0.1'; e.defer=true; e.dataset.tomoRandomizerFilterExpansion='true'; document.body.appendChild(e);
         }
         if (!document.querySelector('script[data-tomo-randomizer-action-fix]')) {
           const s=document.createElement('script'); s.src='randomizer/tomo-randomizer-action-fix.js?v=1.0.4'; s.defer=true; s.dataset.tomoRandomizerActionFix='true'; document.body.appendChild(s);
