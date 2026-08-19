@@ -20,11 +20,11 @@ const SHELL = [
   './auth/anilist-auth.js?v=1.1.3',
   './auth/anilist-auth.css?v=1.0.2',
   './css/tomo-v1.css?v=1.0.0',
-  './js/tomo-v1.js?v=1.0.1',
+  './js/tomo-v1.js?v=1.0.2',
   './js/core/storage.js?v=1.0.0',
   './js/core/anilist-client.js?v=1.0.0',
   './js/features/home-v1.js?v=1.0.0',
-  './js/features/randomizer-modes.js?v=1.0.1',
+  './js/features/randomizer-modes.js?v=1.0.2',
   './js/features/reroll-bridge.js?v=1.0.0',
   './js/features/discovery-hub.js?v=1.0.0',
   './js/features/library-insights.js?v=1.0.0',
@@ -73,7 +73,7 @@ self.addEventListener('fetch', event => {
           const l=document.createElement('link'); l.rel='stylesheet'; l.href='css/tomo-v1.css?v=1.0.0'; l.dataset.tomoV1Style='true'; document.head.appendChild(l);
         }
         if (!document.querySelector('script[data-tomo-v1-module]')) {
-          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.1'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
+          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.2'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
         }
       })();`;
       return new Response(text + loader, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' } });
