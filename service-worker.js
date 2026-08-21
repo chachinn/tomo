@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tomo-shell-v1.3.7-all-filter-tristate';
+const CACHE_NAME = 'tomo-shell-v1.3.8-batch-roll-20';
 const SHELL = [
   './',
   './index.html',
@@ -20,13 +20,14 @@ const SHELL = [
   './auth/anilist-config.js?v=1.0.2',
   './auth/anilist-auth.js?v=1.1.3',
   './auth/anilist-auth.css?v=1.0.2',
-  './css/tomo-v1.css?v=1.0.0',
-  './js/tomo-v1.js?v=1.0.2',
+  './css/tomo-v1.css?v=1.0.1',
+  './js/tomo-v1.js?v=1.0.3',
   './js/core/storage.js?v=1.0.0',
   './js/core/anilist-client.js?v=1.0.0',
   './js/features/home-v1.js?v=1.0.0',
   './js/features/randomizer-modes.js?v=1.0.2',
   './js/features/reroll-bridge.js?v=1.0.0',
+  './js/features/batch-roll.js?v=1.0.0',
   './js/features/discovery-hub.js?v=1.0.0',
   './js/features/library-insights.js?v=1.0.0',
   './js/features/airing-schedule.js?v=1.0.0',
@@ -74,10 +75,10 @@ self.addEventListener('fetch', event => {
           const r=document.createElement('script'); r.src='randomizer/tomo-filter-result-transition.js?v=1.0.0'; r.defer=true; r.dataset.tomoFilterResultTransition='true'; document.body.appendChild(r);
         }
         if (!document.querySelector('link[data-tomo-v1-style]')) {
-          const l=document.createElement('link'); l.rel='stylesheet'; l.href='css/tomo-v1.css?v=1.0.0'; l.dataset.tomoV1Style='true'; document.head.appendChild(l);
+          const l=document.createElement('link'); l.rel='stylesheet'; l.href='css/tomo-v1.css?v=1.0.1'; l.dataset.tomoV1Style='true'; document.head.appendChild(l);
         }
         if (!document.querySelector('script[data-tomo-v1-module]')) {
-          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.2'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
+          const m=document.createElement('script'); m.type='module'; m.src='js/tomo-v1.js?v=1.0.3'; m.dataset.tomoV1Module='true'; document.body.appendChild(m);
         }
       })();`;
       return new Response(text + loader, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' } });
