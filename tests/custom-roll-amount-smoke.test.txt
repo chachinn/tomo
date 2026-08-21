@@ -1,0 +1,4 @@
+Run: node tests/custom-roll-amount-smoke.mjs
+Expected: Custom roll amount static smoke checks passed.
+
+This is a static wiring/regression check only. Physical iPhone/PWA behavior remains a separate QA gate.
