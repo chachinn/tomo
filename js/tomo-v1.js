@@ -4,11 +4,13 @@ import { initDiscoveryHub } from './features/discovery-hub.js?v=1.0.0';
 import { initLibraryInsights } from './features/library-insights.js?v=1.0.0';
 import { initAiringSchedule } from './features/airing-schedule.js?v=1.0.0';
 import { initRerollBridge } from './features/reroll-bridge.js?v=1.0.0';
+import { initBatchRoll } from './features/batch-roll.js?v=1.0.0';
 
 async function boot() {
   await initHomeV1();
   initRandomizerModes();
   initRerollBridge();
+  initBatchRoll();
   initDiscoveryHub();
   initLibraryInsights();
   initAiringSchedule();
